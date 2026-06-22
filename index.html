@@ -1,332 +1,251 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Барин — Меню</title>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Barin — Меню</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
   <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --gold: #c9a84c;
-      --dark: #1a1a1a;
-      --card-bg: #fff;
-      --text: #222;
-      --sub: #888;
-      --badge-hit: #e63946;
-      --badge-sig: #c9a84c;
-      --badge-veg: #2d6a4f;
-      --badge-fish: #1d6fa4;
+      --bg:#F2EBD9; --surface:#E8DEC8; --card:#EDE3CE; --card-alt:#E5D9C0;
+      --border:rgba(60,90,40,0.14); --border2:rgba(60,90,40,0.28);
+      --green:#2A5420; --green-lt:#3A7228; --gold:#7A5C10; --gold-lt:#9A7418;
+      --gold-dim:#C0A055; --cream:#18180A; --text:#262616; --muted:#5E6E48; --faint:#8A9878;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Georgia', serif; background: #f5f0e8; color: var(--text); }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; font-weight: 300; }
 
-    /* HEADER */
-    header {
-      background: var(--dark);
-      color: #fff;
-      text-align: center;
-      padding: 32px 16px 24px;
-      position: relative;
-    }
-    header h1 { font-size: 2.4rem; letter-spacing: 4px; color: var(--gold); }
-    header p { font-size: 0.9rem; letter-spacing: 2px; color: #aaa; margin-top: 6px; }
-    .admin-link {
-      position: absolute; top: 16px; right: 16px;
-      color: #444; font-size: 1.1rem; text-decoration: none;
-    }
-    .admin-link:hover { color: var(--gold); }
+    /* HERO */
+    .hero { min-height:100svh; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; overflow:hidden; }
+    .hero::before { content:''; position:absolute; width:700px; height:700px; border-radius:50%; background:radial-gradient(circle,rgba(46,94,46,.08) 0%,transparent 65%); top:50%; left:50%; transform:translate(-50%,-50%); pointer-events:none; }
+    .hero-inner { position:relative; text-align:center; padding:0 32px; animation:fadeUp .9s ease both; }
+    .hero-eyebrow { font-size:9px; letter-spacing:5px; text-transform:uppercase; color:var(--green-lt); margin-bottom:28px; }
+    .hero-ornament { display:flex; align-items:center; justify-content:center; gap:20px; margin-bottom:16px; }
+    .orn-line { width:72px; height:1px; background:linear-gradient(to right,transparent,var(--green)); }
+    .orn-line.r { background:linear-gradient(to left,transparent,var(--green)); }
+    .orn-dot { width:6px; height:6px; border:1px solid var(--gold-dim); transform:rotate(45deg); }
+    .hero-logo { font-family:'Cormorant Garamond',serif; font-size:clamp(76px,18vw,136px); font-weight:300; color:var(--cream); letter-spacing:14px; text-transform:uppercase; line-height:1; }
+    .hero-badge { display:inline-block; margin-top:22px; border:1px solid var(--border2); border-radius:100px; padding:6px 22px; font-size:9px; letter-spacing:3px; text-transform:uppercase; color:var(--muted); }
+    .hero-tagline { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:18px; color:var(--gold); margin-top:18px; }
+    .hero-scroll { position:absolute; bottom:36px; left:50%; transform:translateX(-50%); display:flex; flex-direction:column; align-items:center; gap:8px; font-size:9px; letter-spacing:3px; text-transform:uppercase; color:var(--faint); animation:bob 2.6s ease infinite; }
 
-    /* CATEGORY NAV */
-    .cat-nav {
-      background: #fff;
-      border-bottom: 2px solid var(--gold);
-      padding: 0 12px;
-      display: flex;
-      overflow-x: auto;
-      gap: 4px;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      scrollbar-width: none;
-    }
-    .cat-nav::-webkit-scrollbar { display: none; }
-    .cat-btn {
-      background: none;
-      border: none;
-      padding: 14px 16px;
-      font-family: 'Georgia', serif;
-      font-size: 0.85rem;
-      color: var(--sub);
-      cursor: pointer;
-      white-space: nowrap;
-      border-bottom: 3px solid transparent;
-      transition: all 0.2s;
-    }
-    .cat-btn:hover { color: var(--dark); border-bottom-color: var(--gold); }
+    /* NAV */
+    .nav-wrap { position:sticky; top:0; z-index:100; background:rgba(242,235,217,.97); backdrop-filter:blur(20px); border-bottom:1px solid var(--border); }
+    .nav { max-width:1100px; margin:0 auto; display:flex; overflow-x:auto; scrollbar-width:none; padding:0 20px; }
+    .nav::-webkit-scrollbar { display:none; }
+    .nav-btn { flex-shrink:0; padding:14px 16px; font-size:9px; font-weight:500; letter-spacing:2px; text-transform:uppercase; color:var(--faint); background:none; border:none; border-bottom:1.5px solid transparent; cursor:pointer; white-space:nowrap; transition:color .2s,border-color .2s; }
+    .nav-btn:hover { color:var(--text); }
+    .nav-btn.active { color:var(--gold); border-bottom-color:var(--gold); }
 
-    /* CART BUTTON */
-    .cart-bar {
-      display: none;
-      position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: var(--dark);
-      color: #fff;
-      border: none;
-      padding: 14px 32px;
-      border-radius: 40px;
-      cursor: pointer;
-      font-size: 1rem;
-      font-family: 'Georgia', serif;
-      z-index: 200;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-      gap: 12px;
-      align-items: center;
-      white-space: nowrap;
-    }
-    .cart-bar.visible { display: flex; }
-    .cart-bar .cbadge {
-      background: var(--gold);
-      color: #000;
-      border-radius: 50%;
-      width: 24px;
-      height: 24px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.8rem;
-      font-weight: bold;
-    }
+    /* PAGE */
+    .page { max-width:1100px; margin:0 auto; padding:72px 24px 120px; }
+    .sec { margin-bottom:84px; }
+    .sec-head { text-align:center; margin-bottom:44px; }
+    .sec-label { font-size:9px; letter-spacing:4px; text-transform:uppercase; color:var(--green-lt); margin-bottom:10px; }
+    .sec-title { font-family:'Cormorant Garamond',serif; font-size:clamp(36px,7vw,52px); font-weight:300; color:var(--cream); line-height:1; }
+    .sec-title em { font-style:italic; color:var(--gold-lt); }
+    .sec-orn { display:flex; align-items:center; justify-content:center; gap:12px; margin-top:16px; }
+    .sec-orn span { width:48px; height:1px; background:linear-gradient(to right,transparent,var(--green)); }
+    .sec-orn span:last-child { background:linear-gradient(to left,transparent,var(--green)); }
+    .sec-orn i { width:5px; height:5px; border:1px solid var(--gold-dim); transform:rotate(45deg); display:block; }
 
-    /* CART MODAL */
-    .cart-overlay {
-      display: none;
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,0.6);
-      z-index: 300;
-    }
-    .cart-overlay.open { display: block; }
-    .cart-modal {
-      display: none;
-      position: fixed;
-      bottom: 0; left: 0; right: 0;
-      background: #fff;
-      border-radius: 20px 20px 0 0;
-      padding: 24px;
-      max-height: 80vh;
-      overflow-y: auto;
-      z-index: 301;
-    }
-    .cart-modal h2 { font-size: 1.3rem; margin-bottom: 16px; }
-    .cart-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px 0;
-      border-bottom: 1px solid #eee;
-      font-size: 0.9rem;
-      gap: 12px;
-    }
-    .cart-item-name { flex: 1; }
-    .cart-item-qty { display: flex; align-items: center; gap: 8px; }
-    .cart-item-qty button {
-      background: #f0f0f0; border: none; width: 28px; height: 28px;
-      border-radius: 50%; cursor: pointer; font-size: 1rem;
-    }
-    .cart-total { font-size: 1.1rem; font-weight: bold; margin: 16px 0; text-align: right; }
-    .cart-close {
-      width: 100%;
-      background: var(--dark); color: #fff;
-      border: none; padding: 14px;
-      border-radius: 8px; cursor: pointer;
-      font-size: 1rem; font-family: 'Georgia', serif;
-    }
+    /* PHOTO GRID */
+    .photo-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:20px; }
 
-    /* MENU SECTIONS */
-    .menu-section { max-width: 1200px; margin: 0 auto; padding: 40px 16px 20px; }
-    .section-title {
-      font-size: 1.5rem;
-      color: var(--dark);
-      border-left: 4px solid var(--gold);
-      padding-left: 16px;
-      margin-bottom: 24px;
-      letter-spacing: 1px;
-    }
-    .section-subtitle { color: #888; font-size: 0.8rem; margin-top: 4px; font-weight: normal; }
-
-    /* GROUP LABEL (drinks subcategories) */
-    .group-label {
-      font-family: sans-serif;
-      font-size: 0.75rem;
-      color: #aaa;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      border-top: 1px solid #e0e0e0;
-      padding-top: 20px;
-      margin: 20px 0 16px;
-    }
-
-    /* CARD GRID */
-    .card-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 20px;
-    }
+    /* GROUP LABEL for drinks */
+    .group-label { font-size:9px; letter-spacing:3px; text-transform:uppercase; color:var(--muted); border-top:1px solid var(--border); padding-top:20px; margin:28px 0 16px; }
+    .group-label:first-child { border-top:none; padding-top:0; }
 
     /* CARD */
-    .card {
-      background: var(--card-bg);
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-      cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
-      display: flex;
-      flex-direction: column;
-    }
-    .card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 8px 24px rgba(0,0,0,0.14);
-    }
-    .card-photo {
-      position: relative;
-      aspect-ratio: 4/3;
-      overflow: hidden;
-      background: #e8e0d4;
-    }
-    .card-photo img {
-      width: 100%; height: 100%;
-      object-fit: cover;
-      display: block;
-      transition: transform 0.4s;
-    }
-    .card:hover .card-photo img { transform: scale(1.05); }
-    .card-badge {
-      position: absolute;
-      top: 10px; left: 10px;
-      padding: 4px 10px;
-      border-radius: 20px;
-      font-family: sans-serif;
-      font-size: 0.7rem;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-      color: #fff;
-    }
-    .badge-hit  { background: var(--badge-hit); }
-    .badge-sig  { background: var(--badge-sig); color: #000; }
-    .badge-veg  { background: var(--badge-veg); }
-    .badge-fish { background: var(--badge-fish); }
+    .card { background:var(--card); border-radius:16px; border:1px solid var(--border); overflow:hidden; transition:transform .2s,box-shadow .2s,border-color .2s; position:relative; display:flex; flex-direction:column; }
+    .card:hover { transform:translateY(-3px); box-shadow:0 12px 40px rgba(42,84,32,.12); border-color:var(--border2); }
 
-    .card-body { padding: 14px 16px 16px; flex: 1; display: flex; flex-direction: column; gap: 6px; }
-    .card-name { font-size: 1rem; font-weight: bold; line-height: 1.3; }
-    .card-sub  { font-size: 0.75rem; color: var(--sub); font-family: sans-serif; }
-    .card-desc { font-size: 0.82rem; color: #555; flex: 1; }
-    .card-footer {
-      display: flex; justify-content: space-between; align-items: center;
-      margin-top: 10px;
-    }
-    .card-price { font-size: 1.15rem; font-weight: bold; color: var(--dark); }
-    .card-add {
-      background: var(--dark); color: #fff;
-      border: none; width: 34px; height: 34px;
-      border-radius: 50%; font-size: 1.3rem;
-      cursor: pointer; display: flex; align-items: center; justify-content: center;
-      transition: background 0.2s;
-    }
-    .card-add:hover { background: var(--gold); color: #000; }
+    .card-photo { width:100%; aspect-ratio:4/3; background:var(--surface); position:relative; overflow:hidden; flex-shrink:0; }
+    .card-photo img { width:100%; height:100%; object-fit:cover; display:block; transition:transform .4s ease; }
+    .card:hover .card-photo img { transform:scale(1.04); }
 
-    /* LOADING */
-    .loading { text-align: center; padding: 80px 20px; color: #aaa; font-size: 1rem; font-family: sans-serif; }
+    .card-badge { position:absolute; top:12px; left:12px; font-size:8px; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; padding:3px 10px; border-radius:20px; backdrop-filter:blur(8px); z-index:1; }
+    .card-badge.hit  { background:rgba(122,92,16,.85); color:#F2EBD9; }
+    .card-badge.sig  { background:rgba(42,84,32,.85);  color:#F2EBD9; }
+    .card-badge.veg  { background:rgba(90,144,64,.85); color:#F2EBD9; }
+    .card-badge.fish { background:rgba(50,100,180,.8); color:#F2EBD9; }
+
+    .card-body { padding:18px 18px 16px; display:flex; flex-direction:column; flex:1; }
+    .card-name { font-family:'Cormorant Garamond',serif; font-size:22px; font-weight:400; color:var(--cream); line-height:1.15; margin-bottom:6px; }
+    .card-sub { font-size:10px; color:var(--muted); font-style:italic; margin-bottom:8px; }
+    .card-desc { font-size:12px; color:var(--faint); line-height:1.6; flex:1; margin-bottom:14px; }
+    .card-footer { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:auto; }
+    .card-price { font-family:'Cormorant Garamond',serif; font-size:24px; font-weight:400; color:var(--gold); }
+    .card-tags { display:flex; flex-wrap:wrap; gap:4px; flex:1; }
+    .tag { font-size:8px; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; padding:2px 9px; border-radius:20px; border:1px solid var(--border); color:var(--faint); }
+    .tag.hot  { border-color:rgba(122,92,16,.4); color:var(--gold); }
+    .tag.sig  { border-color:rgba(58,114,40,.4); color:var(--green-lt); }
+    .tag.veg  { border-color:rgba(58,114,40,.35); color:#5A9040; }
+    .tag.fish { border-color:rgba(50,100,180,.3); color:#5A80C0; }
+
+    .card-add { width:36px; height:36px; border-radius:50%; border:1.5px solid var(--border2); background:transparent; color:var(--green); font-size:20px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background .2s,border-color .2s,color .2s,transform .15s; flex-shrink:0; }
+    .card-add:hover { background:var(--green); border-color:var(--green); color:var(--bg); transform:scale(1.1); }
+    .card-add.added { background:var(--green); border-color:var(--green); color:var(--bg); }
+
+    /* CART */
+    .cart-overlay { position:fixed; inset:0; background:rgba(0,0,0,.35); z-index:400; opacity:0; pointer-events:none; transition:opacity .3s; }
+    .cart-overlay.open { opacity:1; pointer-events:all; }
+    .cart-drawer { position:fixed; top:0; right:0; bottom:0; width:min(400px,100vw); background:var(--bg); border-left:1px solid var(--border2); z-index:401; display:flex; flex-direction:column; transform:translateX(100%); transition:transform .35s cubic-bezier(.4,0,.2,1); box-shadow:-8px 0 40px rgba(0,0,0,.12); }
+    .cart-drawer.open { transform:translateX(0); }
+    .cart-header { padding:24px 24px 20px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+    .cart-header h2 { font-family:'Cormorant Garamond',serif; font-size:26px; font-weight:300; color:var(--cream); letter-spacing:3px; text-transform:uppercase; }
+    .cart-close { width:36px; height:36px; border-radius:50%; border:1px solid var(--border2); background:none; cursor:pointer; color:var(--muted); display:flex; align-items:center; justify-content:center; font-size:18px; transition:all .2s; }
+    .cart-close:hover { border-color:var(--green); color:var(--green); }
+    .cart-body { flex:1; overflow-y:auto; padding:16px 24px; }
+    .cart-empty { text-align:center; padding:60px 0; font-family:'Cormorant Garamond',serif; font-style:italic; font-size:18px; color:var(--faint); }
+    .cart-item { display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid var(--border); }
+    .cart-item:last-child { border-bottom:none; }
+    .cart-item-name { flex:1; font-size:14px; color:var(--text); line-height:1.3; }
+    .cart-item-price { font-size:14px; color:var(--gold); white-space:nowrap; }
+    .cart-qty { display:flex; align-items:center; gap:8px; }
+    .qty-btn { width:26px; height:26px; border-radius:50%; border:1px solid var(--border2); background:none; color:var(--green); font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background .2s,color .2s; }
+    .qty-btn:hover { background:var(--green); color:var(--bg); }
+    .qty-num { font-size:14px; color:var(--text); min-width:16px; text-align:center; }
+    .cart-footer { padding:20px 24px 28px; border-top:1px solid var(--border); }
+    .cart-total-row { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:16px; }
+    .cart-total-label { font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--muted); }
+    .cart-total-price { font-family:'Cormorant Garamond',serif; font-size:28px; font-weight:300; color:var(--cream); }
+    .cart-clear { width:100%; padding:13px; background:var(--green); color:var(--bg); border:none; border-radius:10px; font-size:11px; font-weight:600; letter-spacing:2px; text-transform:uppercase; cursor:pointer; transition:opacity .2s; }
+    .cart-clear:hover { opacity:.85; }
+    .cart-fab { position:fixed; bottom:24px; left:24px; z-index:200; background:var(--green); width:52px; height:52px; border-radius:50%; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 20px rgba(42,84,32,.35); transition:transform .2s,box-shadow .2s; }
+    .cart-fab:hover { transform:scale(1.08); }
+    .cart-fab svg { color:#fff; }
+    .cart-fab-badge { position:absolute; top:-4px; right:-4px; width:20px; height:20px; border-radius:50%; background:var(--gold-dim); color:var(--bg); font-size:10px; font-weight:700; display:none; align-items:center; justify-content:center; }
 
     /* FOOTER */
-    footer {
-      background: var(--dark);
-      color: #888;
-      text-align: center;
-      padding: 24px;
-      font-family: sans-serif;
-      font-size: 0.8rem;
-      margin-top: 60px;
-    }
+    footer { background:var(--green); text-align:center; padding:64px 24px 40px; }
+    .f-logo { font-family:'Cormorant Garamond',serif; font-size:56px; font-weight:300; letter-spacing:16px; text-transform:uppercase; color:#F2EBD9; }
+    .f-tag { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:15px; color:rgba(242,235,217,.55); margin-top:6px; margin-bottom:32px; }
+    .f-rule { width:44px; height:1px; background:rgba(242,235,217,.3); margin:0 auto 32px; }
+    .f-copy { font-size:11px; color:rgba(242,235,217,.3); padding-top:28px; border-top:1px solid rgba(242,235,217,.12); }
+
+    /* ADMIN LINK */
+    .admin-corner { position:fixed; top:12px; right:16px; z-index:200; color:var(--faint); font-size:11px; text-decoration:none; opacity:.4; }
+    .admin-corner:hover { opacity:1; }
+
+    @keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:none} }
+    @keyframes bob { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(7px)} }
+    .reveal { opacity:0; transform:translateY(14px); transition:opacity .7s ease,transform .7s ease; }
+    .reveal.visible { opacity:1; transform:none; }
+
+    @media(max-width:640px) { .photo-grid{grid-template-columns:1fr 1fr;gap:12px} .card-name{font-size:17px} .card-body{padding:12px 12px 10px} }
+    @media(max-width:400px) { .photo-grid{grid-template-columns:1fr} }
   </style>
 </head>
 <body>
 
-<header>
-  <h1>БАРИН</h1>
-  <p>РУССКИЙ РЕСТОРАН · BAKU</p>
-  <a class="admin-link" href="admin.html" title="Администрация">⚙</a>
-</header>
+<a class="admin-corner" href="admin.html">⚙ admin</a>
 
-<nav class="cat-nav" id="catNav"></nav>
+<section class="hero" id="top">
+  <div class="hero-inner">
+    <p class="hero-eyebrow">Samad Vurgun str., 23 · Baku</p>
+    <div class="hero-ornament"><span class="orn-line"></span><span class="orn-dot"></span><span class="orn-line r"></span></div>
+    <h1 class="hero-logo">Barin</h1>
+    <p class="hero-tagline">Rus Mətbəxi · Русская Кухня</p>
+    <span class="hero-badge">Меню · Menü · Menu</span>
+  </div>
+  <div class="hero-scroll">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+    прокрутите
+  </div>
+</section>
 
-<main id="menuMain">
-  <div class="loading">Загружаем меню…</div>
-</main>
-
-<button class="cart-bar" id="cartBtn" onclick="openCart()">
-  🛒 Корзина · <span id="cartTotal">0 ₼</span>
-  <span class="cbadge" id="cartCount">0</span>
-</button>
-
-<div class="cart-overlay" id="cartOverlay" onclick="closeCart()"></div>
-<div class="cart-modal" id="cartModal">
-  <h2>Корзина</h2>
-  <div id="cartItems"></div>
-  <div class="cart-total" id="cartTotalLine"></div>
-  <button class="cart-close" onclick="closeCart()">Закрыть</button>
+<div class="nav-wrap">
+  <nav class="nav" id="mainNav"></nav>
 </div>
 
-<footer>© 2025 Барин · Баку</footer>
+<main class="page" id="menuPage">
+  <div style="text-align:center;padding:80px 0;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:22px;color:var(--faint)">Загружаем меню…</div>
+</main>
+
+<footer>
+  <p class="f-logo">Barin</p>
+  <p class="f-tag">Rus Mətbəxi · Русская Кухня</p>
+  <div class="f-rule"></div>
+  <p class="f-copy">© 2025 Barin Restaurant. Baku, Azerbaijan.</p>
+</footer>
+
+<button class="cart-fab" id="cartFab">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+  <span class="cart-fab-badge" id="cartBadge">0</span>
+</button>
+
+<div class="cart-overlay" id="cartOverlay"></div>
+<div class="cart-drawer" id="cartDrawer">
+  <div class="cart-header">
+    <h2>Заказ</h2>
+    <button class="cart-close" id="cartClose">✕</button>
+  </div>
+  <div class="cart-body" id="cartBody"><p class="cart-empty">Корзина пуста</p></div>
+  <div class="cart-footer" id="cartFooter" style="display:none">
+    <div class="cart-total-row">
+      <span class="cart-total-label">Итого</span>
+      <span class="cart-total-price" id="cartTotal">0 ₼</span>
+    </div>
+    <button class="cart-clear" id="cartClear">Очистить заказ</button>
+  </div>
+</div>
 
 <script>
 const SUPABASE_URL = 'https://rbjatapvjubsdaycdbyp.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJiamF0YXB2anVic2RheWNkYnlwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIxMTEyNTUsImV4cCI6MjA5NzY4NzI1NX0.yG3LIOU2poxRMGVVshER20G1XntBIDTbmNh2YDvMYbM';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-let cart = {};
-let allItems = [];
+// Per-slug title splits for the ornamental heading style
+const titleSplits = {
+  'cold':     ['Холодные ', 'закуски'],
+  'salads':   ['Са',        'латы'],
+  'hot-apps': ['Горячие ',  'закуски'],
+  'soups':    ['Су',        'пы'],
+  'mains':    ['Горячие ',  'блюда'],
+  'sides':    ['Гар',       'ниры'],
+  'desserts': ['Де',        'серты'],
+  'drinks':   ['На',        'питки'],
+};
 
 async function loadMenu() {
-  const [{ data: cats, error: e1 }, { data: items, error: e2 }] = await Promise.all([
+  const [{ data: cats }, { data: items }] = await Promise.all([
     sb.from('categories').select('*').order('sort_order'),
     sb.from('menu_items').select('*').eq('is_active', true).order('sort_order')
   ]);
-  console.log('categories:', cats, 'error:', e1);
-  console.log('items:', items, 'error:', e2);
-  if (e1 || e2 || !cats) {
-    document.getElementById('menuMain').innerHTML = `<div class="loading">Ошибка: ${JSON.stringify(e1 || e2)}</div>`;
-    return;
-  }
-  if (!cats.length) {
-    document.getElementById('menuMain').innerHTML = '<div class="loading">Таблицы пустые — запусти setup.sql в Supabase</div>';
-    return;
-  }
-  allItems = items || [];
-  renderNav(cats);
-  renderMenu(cats, allItems);
+  if (!cats || !cats.length) return;
+
+  buildNav(cats);
+  buildMenu(cats, items || []);
+  initNav();
+  initReveal();
+  initCart();
 }
 
-function renderNav(cats) {
-  document.getElementById('catNav').innerHTML = cats.map(c =>
-    `<button class="cat-btn" onclick="scrollToSection('cat-${c.slug}')">${c.name_ru}</button>`
+function buildNav(cats) {
+  document.getElementById('mainNav').innerHTML = cats.map((c, i) =>
+    `<button class="nav-btn${i===0?' active':''}" data-target="${c.slug}">${c.name_ru}</button>`
   ).join('');
 }
 
-function renderMenu(cats, items) {
+function buildMenu(cats, items) {
   const bySlug = {};
   items.forEach(item => {
     if (!bySlug[item.category_slug]) bySlug[item.category_slug] = [];
     bySlug[item.category_slug].push(item);
   });
 
-  document.getElementById('menuMain').innerHTML = cats.map(cat => {
+  document.getElementById('menuPage').innerHTML = cats.map(cat => {
     const catItems = bySlug[cat.slug] || [];
     if (!catItems.length) return '';
-    const subtitle = [cat.name_az, cat.name_en].filter(Boolean).join(' · ');
 
-    let body;
+    const split = titleSplits[cat.slug] || [cat.name_ru, ''];
+    const label = [cat.name_az, cat.name_en].filter(Boolean).join(' / ');
+
+    let gridHtml;
     if (cat.slug === 'drinks') {
       const groups = {};
       catItems.forEach(item => {
@@ -334,98 +253,144 @@ function renderMenu(cats, items) {
         if (!groups[g]) groups[g] = [];
         groups[g].push(item);
       });
-      body = Object.entries(groups).map(([g, gItems]) =>
-        `<div class="group-label">${g}</div><div class="card-grid">${gItems.map(cardHtml).join('')}</div>`
+      gridHtml = Object.entries(groups).map(([g, gItems]) =>
+        `<p class="group-label">${g}</p><div class="photo-grid">${gItems.map(cardHtml).join('')}</div>`
       ).join('');
     } else {
-      body = `<div class="card-grid">${catItems.map(cardHtml).join('')}</div>`;
+      gridHtml = `<div class="photo-grid">${catItems.map(cardHtml).join('')}</div>`;
     }
 
-    return `<section class="menu-section" id="cat-${cat.slug}">
-      <h2 class="section-title">${cat.name_ru}${subtitle ? `<div class="section-subtitle">${subtitle}</div>` : ''}</h2>
-      ${body}
-    </section>`;
+    return `
+      <section class="sec reveal" id="${cat.slug}">
+        <div class="sec-head">
+          <p class="sec-label">${label}</p>
+          <h2 class="sec-title">${split[0]}<em>${split[1]}</em></h2>
+          <div class="sec-orn"><span></span><i></i><span></span></div>
+        </div>
+        ${gridHtml}
+      </section>`;
   }).join('');
 }
 
 function cardHtml(item) {
-  const badgeLabels = { hit:'Хит', sig:'Авторское', veg:'Вег', fish:'Рыба' };
-  const badge = item.badge && badgeLabels[item.badge]
-    ? `<span class="card-badge badge-${item.badge}">${item.badge_label || badgeLabels[item.badge]}</span>` : '';
+  const badgeMap = { hit:'hit', sig:'sig', veg:'veg', fish:'fish' };
+  const tagClass = { hit:'hot', sig:'sig', veg:'veg', fish:'fish' };
+  const badge = item.badge && badgeMap[item.badge]
+    ? `<span class="card-badge ${badgeMap[item.badge]}">${item.badge_label || item.badge}</span>` : '';
+
+  const tag = item.badge && tagClass[item.badge]
+    ? `<div class="card-tags"><span class="tag ${tagClass[item.badge]}">${item.badge_label || item.badge}</span></div>` : '';
+
   const sub = [item.name_az, item.name_en].filter(Boolean).join(' · ');
   const photo = item.photo_url || 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600&h=450&fit=crop';
-  const nameEsc = (item.name_ru || '').replace(/'/g, "&#39;");
-  return `<div class="card" onclick="addToCart(${item.id},'${nameEsc}',${item.price_value})">
-    <div class="card-photo">
-      <img src="${photo}" alt="" onerror="this.src='https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600&h=450&fit=crop'">
-      ${badge}
-    </div>
-    <div class="card-body">
-      <div class="card-name">${item.name_ru}</div>
-      ${sub ? `<div class="card-sub">${sub}</div>` : ''}
-      ${item.description_ru ? `<div class="card-desc">${item.description_ru}</div>` : ''}
-      <div class="card-footer">
-        <span class="card-price">${item.price_display}</span>
-        <button class="card-add" onclick="event.stopPropagation();addToCart(${item.id},'${nameEsc}',${item.price_value})">+</button>
+  const nameEsc = (item.name_ru || '').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
+  return `
+    <div class="card" data-name="${nameEsc}" data-price="${item.price_value}">
+      <div class="card-photo">
+        ${badge}
+        <img src="${photo}" alt="" onerror="this.src='https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600&h=450&fit=crop'">
       </div>
-    </div>
-  </div>`;
-}
-
-function scrollToSection(id) {
-  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
-
-// CART
-function addToCart(id, name, price) {
-  if (!cart[id]) cart[id] = { name, price, qty: 0 };
-  cart[id].qty++;
-  updateCartUI();
-}
-
-function changeQty(id, delta) {
-  if (!cart[id]) return;
-  cart[id].qty += delta;
-  if (cart[id].qty <= 0) delete cart[id];
-  updateCartUI();
-}
-
-function updateCartUI() {
-  const totalQty = Object.values(cart).reduce((s, i) => s + i.qty, 0);
-  const totalPrice = Object.values(cart).reduce((s, i) => s + i.qty * i.price, 0);
-  document.getElementById('cartCount').textContent = totalQty;
-  document.getElementById('cartTotal').textContent = totalPrice + ' ₼';
-  document.getElementById('cartBtn').classList.toggle('visible', totalQty > 0);
-  renderCartItems(totalPrice);
-}
-
-function renderCartItems(total) {
-  const el = document.getElementById('cartItems');
-  const entries = Object.entries(cart);
-  if (!entries.length) { el.innerHTML = '<p style="color:#aaa;padding:16px 0">Корзина пуста</p>'; return; }
-  el.innerHTML = entries.map(([id, item]) =>
-    `<div class="cart-item">
-      <div class="cart-item-name">${item.name}</div>
-      <div class="cart-item-qty">
-        <button onclick="changeQty(${id},-1)">−</button>
-        <span>${item.qty}</span>
-        <button onclick="changeQty(${id},1)">+</button>
-        <span style="width:60px;text-align:right">${item.qty * item.price} ₼</span>
+      <div class="card-body">
+        <p class="card-name">${item.name_ru}</p>
+        ${sub ? `<p class="card-sub">${sub}</p>` : ''}
+        ${item.description_ru ? `<p class="card-desc">${item.description_ru}</p>` : ''}
+        <div class="card-footer">
+          <span class="card-price">${item.price_display}</span>
+          ${tag}
+        </div>
       </div>
-    </div>`
-  ).join('');
-  document.getElementById('cartTotalLine').textContent = 'Итого: ' + total + ' ₼';
+    </div>`;
 }
 
-function openCart() {
-  document.getElementById('cartOverlay').classList.add('open');
-  document.getElementById('cartModal').style.display = 'block';
-  updateCartUI();
+/* NAV — active state + click scroll */
+function initNav() {
+  const navBtns = document.querySelectorAll('.nav-btn');
+  document.querySelectorAll('.sec[id]').forEach(sec =>
+    new IntersectionObserver(entries => entries.forEach(e => {
+      if (!e.isIntersecting) return;
+      navBtns.forEach(b => b.classList.toggle('active', b.dataset.target === e.target.id));
+      document.querySelector(`.nav-btn[data-target="${e.target.id}"]`)
+        ?.scrollIntoView({behavior:'smooth', block:'nearest', inline:'center'});
+    }), {threshold:.2}).observe(sec)
+  );
+  navBtns.forEach(b => b.addEventListener('click', () =>
+    document.getElementById(b.dataset.target)?.scrollIntoView({behavior:'smooth', block:'start'})));
 }
-function closeCart() {
-  document.getElementById('cartOverlay').classList.remove('open');
-  document.getElementById('cartModal').style.display = 'none';
+
+/* REVEAL on scroll */
+function initReveal() {
+  const ro = new IntersectionObserver(entries =>
+    entries.forEach(e => e.isIntersecting && e.target.classList.add('visible')), {threshold:0});
+  document.querySelectorAll('.reveal').forEach(el => {
+    ro.observe(el);
+    if (el.getBoundingClientRect().top < window.innerHeight) el.classList.add('visible');
+  });
 }
+
+/* CART */
+const cart = {};
+
+function initCart() {
+  document.querySelectorAll('.card[data-name][data-price]').forEach(card => {
+    const name  = card.dataset.name;
+    const price = parseInt(card.dataset.price) || 0;
+    const footer = card.querySelector('.card-footer');
+    if (!footer) return;
+    const btn = document.createElement('button');
+    btn.className = 'card-add';
+    btn.innerHTML = '+';
+    btn.addEventListener('click', () => {
+      if (cart[name]) cart[name].qty++;
+      else cart[name] = {name, price, qty:1};
+      btn.classList.add('added'); btn.innerHTML = '✓';
+      setTimeout(() => { btn.classList.remove('added'); btn.innerHTML = '+'; }, 900);
+      renderCart(); openCart();
+    });
+    footer.appendChild(btn);
+  });
+}
+
+function renderCart() {
+  const body   = document.getElementById('cartBody');
+  const footer = document.getElementById('cartFooter');
+  const badge  = document.getElementById('cartBadge');
+  const items  = Object.values(cart).filter(i => i.qty > 0);
+  const count  = items.reduce((s,i) => s+i.qty, 0);
+  badge.textContent = count;
+  badge.style.display = count > 0 ? 'flex' : 'none';
+  if (!items.length) { body.innerHTML = '<p class="cart-empty">Корзина пуста</p>'; footer.style.display='none'; return; }
+  footer.style.display = 'block';
+  let sum = 0;
+  const keys = items.map(i => i.name);
+  body.innerHTML = items.map((item, idx) => {
+    sum += item.price * item.qty;
+    return `<div class="cart-item">
+      <span class="cart-item-name">${item.name}</span>
+      <div class="cart-qty">
+        <button class="qty-btn" data-idx="${idx}" data-action="minus">−</button>
+        <span class="qty-num">${item.qty}</span>
+        <button class="qty-btn" data-idx="${idx}" data-action="plus">+</button>
+      </div>
+      <span class="cart-item-price">${item.price * item.qty} ₼</span>
+    </div>`;
+  }).join('');
+  document.getElementById('cartTotal').textContent = sum + ' ₼';
+  body.querySelectorAll('.qty-btn').forEach(btn => btn.addEventListener('click', () => {
+    const k = keys[parseInt(btn.dataset.idx)];
+    if (!k || !cart[k]) return;
+    if (btn.dataset.action === 'plus') cart[k].qty++;
+    else { cart[k].qty--; if (cart[k].qty <= 0) delete cart[k]; }
+    renderCart();
+  }));
+}
+
+function openCart()  { document.getElementById('cartDrawer').classList.add('open'); document.getElementById('cartOverlay').classList.add('open'); }
+function closeCart() { document.getElementById('cartDrawer').classList.remove('open'); document.getElementById('cartOverlay').classList.remove('open'); }
+document.getElementById('cartFab').addEventListener('click', openCart);
+document.getElementById('cartClose').addEventListener('click', closeCart);
+document.getElementById('cartOverlay').addEventListener('click', closeCart);
+document.getElementById('cartClear').addEventListener('click', () => { Object.keys(cart).forEach(k=>delete cart[k]); renderCart(); closeCart(); });
 
 loadMenu();
 </script>
