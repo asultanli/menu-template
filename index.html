@@ -108,6 +108,7 @@
     }
     .cart-overlay.open { display: block; }
     .cart-modal {
+      display: none;
       position: fixed;
       bottom: 0; left: 0; right: 0;
       background: #fff;
@@ -292,8 +293,14 @@ async function loadMenu() {
     sb.from('categories').select('*').order('sort_order'),
     sb.from('menu_items').select('*').eq('is_active', true).order('sort_order')
   ]);
+  console.log('categories:', cats, 'error:', e1);
+  console.log('items:', items, 'error:', e2);
   if (e1 || e2 || !cats) {
-    document.getElementById('menuMain').innerHTML = '<div class="loading">Ошибка загрузки. Проверь подключение.</div>';
+    document.getElementById('menuMain').innerHTML = `<div class="loading">Ошибка: ${JSON.stringify(e1 || e2)}</div>`;
+    return;
+  }
+  if (!cats.length) {
+    document.getElementById('menuMain').innerHTML = '<div class="loading">Таблицы пустые — запусти setup.sql в Supabase</div>';
     return;
   }
   allItems = items || [];
@@ -410,8 +417,15 @@ function renderCartItems(total) {
   document.getElementById('cartTotalLine').textContent = 'Итого: ' + total + ' ₼';
 }
 
-function openCart() { document.getElementById('cartOverlay').classList.add('open'); updateCartUI(); }
-function closeCart() { document.getElementById('cartOverlay').classList.remove('open'); }
+function openCart() {
+  document.getElementById('cartOverlay').classList.add('open');
+  document.getElementById('cartModal').style.display = 'block';
+  updateCartUI();
+}
+function closeCart() {
+  document.getElementById('cartOverlay').classList.remove('open');
+  document.getElementById('cartModal').style.display = 'none';
+}
 
 loadMenu();
 </script>
