@@ -318,7 +318,7 @@ function cardHtml(item) {
   const hasVideo = item.video_url ? ' has-video' : '';
   const videoCardClass = item.video_url ? ' video-card' : '';
   const videoEl = item.video_url
-    ? `<video src="${item.video_url}" muted playsinline preload="metadata"></video>
+    ? `<video src="${item.video_url}" muted playsinline webkit-playsinline x-webkit-airplay="deny" disablepictureinpicture preload="metadata"></video>
        <div class="card-video-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div>`
     : '';
 
@@ -367,6 +367,11 @@ function initVideoHover() {
       const ox = r.left < vw * 0.35 ? 'left' : r.right > vw * 0.65 ? 'right' : 'center';
       card.style.transformOrigin = `${ox} bottom`;
     }
+
+    /* ensure inline on iOS */
+    video.setAttribute('playsinline', '');
+    video.setAttribute('webkit-playsinline', '');
+    video.playsInline = true;
 
     /* desktop hover */
     card.addEventListener('mouseenter', () => { setOrigin(); video.currentTime = 0; video.play().catch(()=>{}); });
