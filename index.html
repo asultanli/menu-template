@@ -149,11 +149,18 @@
     .reveal { opacity:0; transform:translateY(14px); transition:opacity .7s ease,transform .7s ease; }
     .reveal.visible { opacity:1; transform:none; }
 
-    /* FULLSCREEN VIDEO MODAL */
-    .vid-modal { position:fixed; inset:0; z-index:600; background:rgba(0,0,0,.96); display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity .25s; }
-    .vid-modal.open { opacity:1; pointer-events:all; }
-    .vid-modal video { width:100%; max-height:100svh; object-fit:contain; }
-    .vid-modal-close { position:absolute; top:16px; right:16px; width:44px; height:44px; border-radius:50%; background:rgba(255,255,255,.18); border:none; color:#fff; font-size:22px; cursor:pointer; display:flex; align-items:center; justify-content:center; z-index:1; }
+    /* FULLSCREEN CARD MODAL */
+    .card-modal { position:fixed; inset:0; z-index:600; background:var(--card); display:flex; flex-direction:column; transform:scale(.92); opacity:0; pointer-events:none; transition:transform .3s cubic-bezier(.2,0,.2,1), opacity .3s; overflow:hidden; }
+    .card-modal.open { transform:scale(1); opacity:1; pointer-events:all; }
+    .card-modal-photo { width:100%; flex:0 0 58svh; position:relative; background:var(--surface); overflow:hidden; }
+    .card-modal-photo img { width:100%; height:100%; object-fit:cover; object-position:center 80%; display:block; }
+    .card-modal-photo video { position:absolute; inset:0; width:100%; height:100%; object-fit:contain; background:#1a1007; }
+    .card-modal-body { flex:1; padding:28px 24px 40px; display:flex; flex-direction:column; overflow-y:auto; }
+    .card-modal-name { font-family:'Cormorant Garamond',serif; font-size:32px; font-weight:400; color:var(--cream); line-height:1.15; margin-bottom:8px; }
+    .card-modal-sub { font-size:11px; color:var(--muted); font-style:italic; margin-bottom:12px; }
+    .card-modal-desc { font-size:14px; color:var(--faint); line-height:1.7; flex:1; }
+    .card-modal-price { font-family:'Cormorant Garamond',serif; font-size:36px; color:var(--gold); margin-top:20px; }
+    .card-modal-close { position:absolute; top:16px; right:16px; width:40px; height:40px; border-radius:50%; background:rgba(0,0,0,.45); backdrop-filter:blur(8px); border:none; color:#fff; font-size:20px; cursor:pointer; display:flex; align-items:center; justify-content:center; z-index:10; }
 
     @media(max-width:768px) {
       .hero-logo { letter-spacing:8px; }
@@ -229,9 +236,18 @@
   </div>
 </div>
 
-<div class="vid-modal" id="vidModal">
-  <button class="vid-modal-close" id="vidModalClose">✕</button>
-  <video id="vidModalVideo" muted playsinline webkit-playsinline preload="none"></video>
+<div class="card-modal" id="cardModal">
+  <button class="card-modal-close" id="cardModalClose">✕</button>
+  <div class="card-modal-photo">
+    <img id="cardModalImg" src="" alt="">
+    <video id="cardModalVideo" muted playsinline webkit-playsinline preload="none" style="display:none"></video>
+  </div>
+  <div class="card-modal-body">
+    <p class="card-modal-name" id="cardModalName"></p>
+    <p class="card-modal-sub" id="cardModalSub"></p>
+    <p class="card-modal-desc" id="cardModalDesc"></p>
+    <p class="card-modal-price" id="cardModalPrice"></p>
+  </div>
 </div>
 
 <script>
@@ -389,26 +405,40 @@ function initVideoHover() {
     card.addEventListener('mouseenter', () => { if (isTouch()) return; setOrigin(); video.currentTime = 0; video.play().catch(()=>{}); });
     card.addEventListener('mouseleave', () => { if (isTouch()) return; video.pause(); video.currentTime = 0; });
 
-    /* mobile tap → fullscreen modal */
+    /* mobile tap → fullscreen card modal */
     card.addEventListener('click', (e) => {
       if (!isTouch()) return;
       e.stopPropagation();
-      const mv = document.getElementById('vidModalVideo');
-      mv.src = video.src;
-      mv.currentTime = 0;
-      document.getElementById('vidModal').classList.add('open');
-      mv.play().catch(()=>{});
+      const img    = card.querySelector('.card-photo img');
+      const mv     = document.getElementById('cardModalVideo');
+      const mi     = document.getElementById('cardModalImg');
+      mi.src = img ? img.src : '';
+      document.getElementById('cardModalName').textContent  = card.dataset.name || '';
+      document.getElementById('cardModalPrice').textContent = card.querySelector('.card-price')?.textContent || '';
+      document.getElementById('cardModalSub').textContent   = card.querySelector('.card-sub')?.textContent || '';
+      document.getElementById('cardModalDesc').textContent  = card.querySelector('.card-desc')?.textContent || '';
+      if (video.src) {
+        mv.src = video.src; mv.style.display = 'block';
+        mv.currentTime = 0; mv.play().catch(()=>{});
+      } else {
+        mv.style.display = 'none'; mv.src = '';
+      }
+      document.getElementById('cardModal').classList.add('open');
+      document.body.style.overflow = 'hidden';
     });
   });
 }
 
-/* VIDEO MODAL */
+/* CARD MODAL CLOSE */
 (function() {
-  const modal = document.getElementById('vidModal');
-  const mv    = document.getElementById('vidModalVideo');
-  const close = () => { modal.classList.remove('open'); mv.pause(); mv.src = ''; };
-  document.getElementById('vidModalClose').addEventListener('click', close);
-  modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
+  const modal = document.getElementById('cardModal');
+  const mv    = document.getElementById('cardModalVideo');
+  const close = () => {
+    modal.classList.remove('open');
+    mv.pause(); mv.src = '';
+    document.body.style.overflow = '';
+  };
+  document.getElementById('cardModalClose').addEventListener('click', close);
 })();
 
 /* REVEAL on scroll */
