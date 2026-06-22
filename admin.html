@@ -3,179 +3,282 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Барин — Админ панель</title>
+  <title>S2 — Admin</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
   <style>
-    :root { --gold: #c9a84c; --dark: #1a1a1a; --red: #e63946; --green: #2d6a4f; }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: sans-serif; background: #f0f0f0; color: #222; }
+    :root {
+      --bg: #F2EBD9; --surface: #E8DEC8; --card: #EDE3CE;
+      --border: rgba(60,90,40,0.14); --border2: rgba(60,90,40,0.28);
+      --green: #2A5420; --green-lt: #3A7228;
+      --gold: #7A5C10; --gold-lt: #9A7418; --gold-dim: #C0A055;
+      --cream: #18180A; --text: #262616; --muted: #5E6E48; --faint: #8A9878;
+      --red: #c0392b;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; font-weight: 300; background: var(--bg); color: var(--text); min-height: 100vh; }
 
-    /* LOGIN */
+    /* ── LOGIN ── */
     .login-screen {
       min-height: 100vh;
       display: flex; align-items: center; justify-content: center;
-      background: var(--dark);
+      background: var(--green);
     }
     .login-box {
-      background: #fff;
-      padding: 40px;
-      border-radius: 12px;
-      width: 320px;
+      background: var(--bg);
+      padding: 48px 40px;
+      border-radius: 20px;
+      width: 340px;
       text-align: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.25);
     }
-    .login-box h1 { font-size: 1.8rem; color: var(--gold); letter-spacing: 3px; margin-bottom: 8px; }
-    .login-box p { color: #888; font-size: 0.85rem; margin-bottom: 28px; }
+    .login-logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 3rem; font-weight: 300;
+      letter-spacing: 10px; color: var(--cream);
+      margin-bottom: 4px;
+    }
+    .login-sub {
+      font-size: 9px; letter-spacing: 4px; text-transform: uppercase;
+      color: var(--faint); margin-bottom: 36px;
+    }
     .login-box input {
-      width: 100%; padding: 12px; border: 1px solid #ddd;
-      border-radius: 8px; margin-bottom: 12px;
-      font-size: 1rem; outline: none;
+      width: 100%; padding: 12px 16px;
+      border: 1px solid var(--border2);
+      border-radius: 10px; margin-bottom: 12px;
+      font-size: 0.9rem; font-family: 'Inter', sans-serif;
+      background: #fff; color: var(--text); outline: none;
+      transition: border-color 0.2s;
     }
-    .login-box input:focus { border-color: var(--gold); }
-    .login-box button {
+    .login-box input:focus { border-color: var(--green); }
+    .login-btn {
       width: 100%; padding: 13px;
-      background: var(--dark); color: #fff;
-      border: none; border-radius: 8px;
-      font-size: 1rem; cursor: pointer;
+      background: var(--green); color: var(--bg);
+      border: none; border-radius: 10px;
+      font-family: 'Inter', sans-serif; font-size: 11px;
+      font-weight: 600; letter-spacing: 3px; text-transform: uppercase;
+      cursor: pointer; transition: opacity 0.2s;
     }
-    .login-box button:hover { background: #333; }
-    .login-error { color: var(--red); font-size: 0.85rem; margin-top: 10px; }
+    .login-btn:hover { opacity: 0.85; }
+    .login-error { color: var(--red); font-size: 0.8rem; margin-top: 12px; min-height: 20px; }
 
-    /* ADMIN PANEL */
+    /* ── PANEL ── */
     .admin-panel { display: none; }
     .admin-panel.visible { display: block; }
 
+    /* TOP BAR */
     .top-bar {
-      background: var(--dark);
-      color: #fff;
-      padding: 16px 24px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: sticky; top: 0; z-index: 50;
+      background: var(--green);
+      padding: 0 28px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 100;
+      height: 56px;
     }
-    .top-bar h1 { font-size: 1.1rem; color: var(--gold); letter-spacing: 2px; }
-    .top-bar-right { display: flex; gap: 12px; align-items: center; }
-    .top-bar a { color: #aaa; font-size: 0.85rem; text-decoration: none; }
-    .top-bar a:hover { color: #fff; }
-    .btn-logout {
-      background: none; border: 1px solid #555; color: #aaa;
-      padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 0.85rem;
+    .top-bar-logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.4rem; font-weight: 300;
+      letter-spacing: 6px; color: var(--bg);
+      display: flex; align-items: center; gap: 12px;
     }
-    .btn-logout:hover { border-color: #fff; color: #fff; }
+    .top-bar-logo span {
+      font-family: 'Inter', sans-serif;
+      font-size: 9px; letter-spacing: 3px; text-transform: uppercase;
+      color: rgba(242,235,217,0.5); font-weight: 500;
+    }
+    .top-bar-right { display: flex; gap: 8px; align-items: center; }
+    .tb-link {
+      color: rgba(242,235,217,0.6); font-size: 11px; letter-spacing: 1px;
+      text-decoration: none; padding: 6px 12px;
+      border: 1px solid rgba(242,235,217,0.2);
+      border-radius: 6px; transition: all 0.2s;
+    }
+    .tb-link:hover { color: var(--bg); border-color: rgba(242,235,217,0.5); }
+    .tb-logout {
+      background: none; border: 1px solid rgba(242,235,217,0.2);
+      color: rgba(242,235,217,0.6); padding: 6px 12px;
+      border-radius: 6px; cursor: pointer; font-size: 11px;
+      letter-spacing: 1px; font-family: 'Inter', sans-serif;
+      transition: all 0.2s;
+    }
+    .tb-logout:hover { color: var(--bg); border-color: rgba(242,235,217,0.5); }
 
-    .admin-main { max-width: 960px; margin: 0 auto; padding: 24px 16px; }
+    /* MAIN CONTENT */
+    .admin-main { max-width: 1000px; margin: 0 auto; padding: 32px 24px 80px; }
 
     /* STATS */
-    .stats { display: flex; gap: 16px; margin-bottom: 28px; flex-wrap: wrap; }
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 32px; }
     .stat-card {
-      background: #fff; border-radius: 10px; padding: 16px 20px;
-      flex: 1; min-width: 140px; border-left: 4px solid var(--gold);
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px; padding: 20px 22px;
+      position: relative; overflow: hidden;
     }
-    .stat-card .num { font-size: 2rem; font-weight: bold; }
-    .stat-card .label { font-size: 0.8rem; color: #888; margin-top: 2px; }
+    .stat-card::before {
+      content: ''; position: absolute;
+      top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(to right, var(--green), var(--gold-dim));
+    }
+    .stat-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2.8rem; font-weight: 300; color: var(--cream);
+      line-height: 1;
+    }
+    .stat-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--faint); margin-top: 6px; }
 
-    /* ADD ITEM FORM */
-    .add-section {
-      background: #fff; border-radius: 10px; padding: 20px; margin-bottom: 28px;
+    /* SECTION HEADER */
+    .section-head {
+      display: flex; align-items: center; gap: 16px;
+      margin-bottom: 20px; margin-top: 36px;
     }
-    .add-section h2 { font-size: 1rem; margin-bottom: 16px; color: var(--dark); }
-    .form-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
-    .form-row input, .form-row select, .form-row textarea {
-      flex: 1; min-width: 160px; padding: 9px 12px;
-      border: 1px solid #ddd; border-radius: 7px;
-      font-size: 0.9rem; outline: none;
+    .section-head h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.5rem; font-weight: 300; color: var(--cream);
+      white-space: nowrap;
     }
-    .form-row input:focus, .form-row select:focus { border-color: var(--gold); }
-    .form-row textarea { min-height: 60px; resize: vertical; }
+    .section-head-line { flex: 1; height: 1px; background: var(--border); }
+
+    /* ADD FORM */
+    .add-form {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px; padding: 24px;
+      margin-bottom: 8px;
+    }
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; margin-bottom: 12px; }
+    .form-grid input, .form-grid select {
+      padding: 10px 14px;
+      border: 1px solid var(--border2);
+      border-radius: 9px;
+      font-size: 0.85rem; font-family: 'Inter', sans-serif;
+      background: var(--bg); color: var(--text);
+      outline: none; transition: border-color 0.2s;
+    }
+    .form-grid input:focus, .form-grid select:focus { border-color: var(--green); }
+    .form-grid input::placeholder { color: var(--faint); }
     .btn-add {
-      background: var(--green); color: #fff;
-      border: none; padding: 10px 24px;
-      border-radius: 7px; cursor: pointer; font-size: 0.9rem;
+      background: var(--green); color: var(--bg);
+      border: none; padding: 10px 28px;
+      border-radius: 9px; cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;
+      transition: opacity 0.2s;
     }
     .btn-add:hover { opacity: 0.85; }
 
-    /* CATEGORY SECTION */
-    .cat-section { margin-bottom: 32px; }
-    .cat-header {
+    /* CATEGORY BLOCK */
+    .cat-block { margin-bottom: 28px; }
+    .cat-block-head {
       display: flex; align-items: center; justify-content: space-between;
-      background: var(--dark); color: var(--gold);
-      padding: 12px 18px; border-radius: 10px 10px 0 0;
+      padding: 12px 18px;
+      background: var(--green);
+      border-radius: 12px 12px 0 0;
     }
-    .cat-header h2 { font-size: 1rem; letter-spacing: 1px; }
-    .cat-count { font-size: 0.8rem; color: #aaa; }
+    .cat-block-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.1rem; font-weight: 300;
+      letter-spacing: 2px; color: var(--bg);
+    }
+    .cat-block-count {
+      font-size: 10px; letter-spacing: 1px; text-transform: uppercase;
+      color: rgba(242,235,217,0.5);
+    }
 
     /* ITEM ROW */
     .item-row {
-      background: #fff;
-      border-bottom: 1px solid #eee;
-      display: flex;
-      align-items: center;
-      padding: 12px 16px;
-      gap: 14px;
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center;
+      padding: 11px 16px; gap: 14px;
       transition: background 0.15s;
     }
-    .item-row:last-child { border-radius: 0 0 10px 10px; border-bottom: none; }
-    .item-row.inactive { background: #fafafa; opacity: 0.6; }
-    .item-row:hover { background: #f9f7f3; }
+    .item-row:last-child { border-radius: 0 0 12px 12px; border-bottom: none; }
+    .item-row.inactive { opacity: 0.45; }
+    .item-row:hover { background: var(--surface); }
 
     .item-photo {
-      width: 56px; height: 42px;
-      border-radius: 6px; object-fit: cover;
-      background: #eee; flex-shrink: 0;
+      width: 54px; height: 40px; border-radius: 8px;
+      object-fit: cover; flex-shrink: 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
     }
     .item-info { flex: 1; min-width: 0; }
-    .item-name { font-weight: 600; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .item-sub { font-size: 0.75rem; color: #aaa; }
-
-    /* TOGGLE SWITCH */
-    .toggle { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
-    .toggle input { display: none; }
-    .toggle-slider {
-      position: absolute; inset: 0;
-      background: #ccc; border-radius: 24px; cursor: pointer;
-      transition: 0.2s;
+    .item-name {
+      font-size: 0.88rem; font-weight: 500; color: var(--cream);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
-    .toggle-slider:before {
-      content: '';
-      position: absolute;
-      width: 18px; height: 18px;
-      left: 3px; top: 3px;
-      background: #fff; border-radius: 50%;
-      transition: 0.2s;
-    }
-    .toggle input:checked + .toggle-slider { background: var(--green); }
-    .toggle input:checked + .toggle-slider:before { transform: translateX(20px); }
+    .item-sub { font-size: 0.72rem; color: var(--faint); margin-top: 2px; }
 
-    /* INLINE EDIT */
     .item-price-input {
-      width: 90px; padding: 6px 8px;
-      border: 1px solid #ddd; border-radius: 6px;
-      font-size: 0.85rem; text-align: center;
+      width: 88px; padding: 6px 10px;
+      border: 1px solid var(--border2); border-radius: 7px;
+      font-size: 0.82rem; text-align: center;
+      font-family: 'Inter', sans-serif;
+      background: var(--bg); color: var(--text); outline: none;
+      transition: border-color 0.2s;
     }
-    .item-price-input:focus { border-color: var(--gold); outline: none; }
+    .item-price-input:focus { border-color: var(--green); }
 
     .btn-save {
-      background: var(--gold); color: #000;
-      border: none; padding: 6px 12px;
-      border-radius: 6px; cursor: pointer;
-      font-size: 0.8rem; font-weight: bold;
+      background: var(--gold-dim); color: #fff;
+      border: none; padding: 6px 12px; border-radius: 7px;
+      cursor: pointer; font-size: 12px; font-weight: 600;
+      transition: opacity 0.2s;
     }
-    .btn-del {
-      background: none; color: #ccc;
-      border: none; font-size: 1.1rem; cursor: pointer; padding: 4px;
-    }
-    .btn-del:hover { color: var(--red); }
+    .btn-save:hover { opacity: 0.8; }
 
-    .loading { text-align: center; padding: 60px; color: #aaa; }
-    .toast {
-      position: fixed; bottom: 24px; right: 24px;
-      background: var(--dark); color: #fff;
-      padding: 12px 20px; border-radius: 8px;
-      font-size: 0.9rem; z-index: 999;
-      opacity: 0; pointer-events: none;
-      transition: opacity 0.3s;
+    /* TOGGLE */
+    .toggle { position: relative; width: 42px; height: 22px; flex-shrink: 0; cursor: pointer; }
+    .toggle input { display: none; }
+    .toggle-track {
+      position: absolute; inset: 0;
+      background: var(--border2); border-radius: 22px;
+      transition: background 0.25s;
     }
-    .toast.show { opacity: 1; }
+    .toggle-thumb {
+      position: absolute;
+      width: 16px; height: 16px;
+      top: 3px; left: 3px;
+      background: #fff; border-radius: 50%;
+      transition: transform 0.25s;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    }
+    .toggle input:checked ~ .toggle-track { background: var(--green-lt); }
+    .toggle input:checked ~ .toggle-thumb { transform: translateX(20px); }
+
+    .btn-del {
+      background: none; color: var(--faint);
+      border: none; font-size: 1rem; cursor: pointer; padding: 4px 6px;
+      border-radius: 6px; transition: color 0.2s, background 0.2s;
+    }
+    .btn-del:hover { color: var(--red); background: rgba(192,57,43,0.08); }
+
+    /* LOADING */
+    .loading {
+      text-align: center; padding: 60px;
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic; font-size: 1.3rem; color: var(--faint);
+    }
+
+    /* TOAST */
+    .toast {
+      position: fixed; bottom: 28px; right: 28px;
+      background: var(--green); color: var(--bg);
+      padding: 12px 22px; border-radius: 10px;
+      font-size: 0.85rem; z-index: 999;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.3s, transform 0.3s;
+      transform: translateY(8px);
+      box-shadow: 0 4px 20px rgba(42,84,32,0.3);
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+
+    @media (max-width: 600px) {
+      .stats { grid-template-columns: repeat(3,1fr); gap: 10px; }
+      .stat-num { font-size: 2rem; }
+      .form-grid { grid-template-columns: 1fr 1fr; }
+      .item-sub { display: none; }
+    }
   </style>
 </head>
 <body>
@@ -183,52 +286,58 @@
 <!-- LOGIN -->
 <div class="login-screen" id="loginScreen">
   <div class="login-box">
-    <h1>БАРИН</h1>
-    <p>Панель администратора</p>
-    <input type="text" id="loginUser" placeholder="Логин" value="admin">
-    <input type="password" id="loginPass" placeholder="Пароль" onkeydown="if(event.key==='Enter')doLogin()">
-    <button onclick="doLogin()">Войти</button>
+    <div class="login-logo">S2</div>
+    <div class="login-sub">Admin Panel</div>
+    <input type="text" id="loginUser" placeholder="Логин" value="admin" autocomplete="username">
+    <input type="password" id="loginPass" placeholder="Пароль" autocomplete="current-password"
+           onkeydown="if(event.key==='Enter') doLogin()">
+    <button class="login-btn" onclick="doLogin()">Войти</button>
     <div class="login-error" id="loginErr"></div>
   </div>
 </div>
 
 <!-- ADMIN PANEL -->
 <div class="admin-panel" id="adminPanel">
+
   <div class="top-bar">
-    <h1>БАРИН · ADMIN</h1>
+    <div class="top-bar-logo">
+      S2 <span>Admin</span>
+    </div>
     <div class="top-bar-right">
-      <a href="index.html" target="_blank">↗ Меню</a>
-      <button class="btn-logout" onclick="logout()">Выйти</button>
+      <a class="tb-link" href="index.html" target="_blank">↗ Меню</a>
+      <button class="tb-logout" onclick="logout()">Выйти</button>
     </div>
   </div>
 
   <div class="admin-main">
+
     <!-- Stats -->
     <div class="stats">
       <div class="stat-card">
-        <div class="num" id="statTotal">—</div>
-        <div class="label">Всего блюд</div>
+        <div class="stat-num" id="statTotal">—</div>
+        <div class="stat-label">Всего блюд</div>
       </div>
       <div class="stat-card">
-        <div class="num" id="statActive">—</div>
-        <div class="label">Активных</div>
+        <div class="stat-num" id="statActive">—</div>
+        <div class="stat-label">Активных</div>
       </div>
       <div class="stat-card">
-        <div class="num" id="statHidden">—</div>
-        <div class="label">Скрытых</div>
+        <div class="stat-num" id="statHidden">—</div>
+        <div class="stat-label">Скрытых</div>
       </div>
     </div>
 
-    <!-- Add new item -->
-    <div class="add-section">
-      <h2>+ Добавить новое блюдо</h2>
-      <div class="form-row">
+    <!-- Add item -->
+    <div class="section-head">
+      <h2>Добавить блюдо</h2>
+      <div class="section-head-line"></div>
+    </div>
+    <div class="add-form">
+      <div class="form-grid">
         <select id="newCat"></select>
         <input type="text" id="newName" placeholder="Название (RU) *">
-        <input type="text" id="newPrice" placeholder="Цена напр. 15 ₼ *">
-        <input type="number" id="newPriceVal" placeholder="Цена (число)" min="0">
-      </div>
-      <div class="form-row">
+        <input type="text" id="newPrice" placeholder="Цена: 15 ₼ *">
+        <input type="number" id="newPriceVal" placeholder="Цена числом" min="0">
         <input type="text" id="newNameAz" placeholder="Название (AZ)">
         <input type="text" id="newNameEn" placeholder="Название (EN)">
         <select id="newBadge">
@@ -238,16 +347,19 @@
           <option value="veg">Вег</option>
           <option value="fish">Рыба</option>
         </select>
-      </div>
-      <div class="form-row">
-        <input type="text" id="newPhoto" placeholder="URL фото (Unsplash)">
+        <input type="text" id="newPhoto" placeholder="URL фото">
         <input type="text" id="newDesc" placeholder="Описание (RU)">
       </div>
-      <button class="btn-add" onclick="addItem()">Добавить блюдо</button>
+      <button class="btn-add" onclick="addItem()">+ Добавить</button>
     </div>
 
-    <!-- Menu items -->
+    <!-- List -->
+    <div class="section-head" style="margin-top: 40px;">
+      <h2>Все блюда</h2>
+      <div class="section-head-line"></div>
+    </div>
     <div id="menuList"><div class="loading">Загрузка…</div></div>
+
   </div>
 </div>
 
@@ -258,13 +370,9 @@ const SUPABASE_URL = 'https://rbjatapvjubsdaycdbyp.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJiamF0YXB2anVic2RheWNkYnlwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIxMTEyNTUsImV4cCI6MjA5NzY4NzI1NX0.yG3LIOU2poxRMGVVshER20G1XntBIDTbmNh2YDvMYbM';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const ADMIN_USER = 'admin';
-const ADMIN_PASS = 'admin';
+const ADMIN_USER = 'admin', ADMIN_PASS = 'admin';
+let allCats = [], allItems = [];
 
-let allCats = [];
-let allItems = [];
-
-// AUTH
 function doLogin() {
   const u = document.getElementById('loginUser').value.trim();
   const p = document.getElementById('loginPass').value;
@@ -288,10 +396,8 @@ function showPanel() {
   loadData();
 }
 
-// Check if already logged in
 if (sessionStorage.getItem('adminAuth') === '1') showPanel();
 
-// DATA
 async function loadData() {
   const [{ data: cats }, { data: items }] = await Promise.all([
     sb.from('categories').select('*').order('sort_order'),
@@ -323,42 +429,40 @@ function renderList() {
     if (!bySlug[item.category_slug]) bySlug[item.category_slug] = [];
     bySlug[item.category_slug].push(item);
   });
-
   document.getElementById('menuList').innerHTML = allCats.map(cat => {
     const items = bySlug[cat.slug] || [];
     if (!items.length) return '';
-    const activeCount = items.filter(i => i.is_active).length;
-    return `
-      <div class="cat-section">
-        <div class="cat-header">
-          <h2>${cat.name_ru}</h2>
-          <span class="cat-count">${activeCount}/${items.length} активно</span>
-        </div>
-        ${items.map(itemRowHtml).join('')}
-      </div>`;
+    const active = items.filter(i => i.is_active).length;
+    return `<div class="cat-block">
+      <div class="cat-block-head">
+        <span class="cat-block-name">${cat.name_ru}</span>
+        <span class="cat-block-count">${active} / ${items.length} активно</span>
+      </div>
+      ${items.map(itemRowHtml).join('')}
+    </div>`;
   }).join('');
 }
 
 function itemRowHtml(item) {
   const photo = item.photo_url || 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=80&h=60&fit=crop';
-  return `
-    <div class="item-row ${item.is_active ? '' : 'inactive'}" id="row-${item.id}">
-      <img class="item-photo" src="${photo}" onerror="this.src='https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=80&h=60&fit=crop'" alt="">
-      <div class="item-info">
-        <div class="item-name">${item.name_ru}</div>
-        <div class="item-sub">${item.name_az || ''}</div>
-      </div>
-      <input class="item-price-input" id="price-${item.id}" value="${item.price_display}" title="Редактировать цену">
-      <button class="btn-save" onclick="savePrice(${item.id})">✓</button>
-      <label class="toggle" title="${item.is_active ? 'Скрыть' : 'Показать'}">
-        <input type="checkbox" ${item.is_active ? 'checked' : ''} onchange="toggleActive(${item.id}, this.checked)">
-        <span class="toggle-slider"></span>
-      </label>
-      <button class="btn-del" onclick="deleteItem(${item.id})" title="Удалить">🗑</button>
-    </div>`;
+  return `<div class="item-row ${item.is_active ? '' : 'inactive'}" id="row-${item.id}">
+    <img class="item-photo" src="${photo}" alt=""
+         onerror="this.src='https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=80&h=60&fit=crop'">
+    <div class="item-info">
+      <div class="item-name">${item.name_ru}</div>
+      <div class="item-sub">${item.name_az || ''}</div>
+    </div>
+    <input class="item-price-input" id="price-${item.id}" value="${item.price_display}">
+    <button class="btn-save" onclick="savePrice(${item.id})">✓</button>
+    <label class="toggle">
+      <input type="checkbox" ${item.is_active ? 'checked' : ''} onchange="toggleActive(${item.id}, this.checked)">
+      <div class="toggle-track"></div>
+      <div class="toggle-thumb"></div>
+    </label>
+    <button class="btn-del" onclick="deleteItem(${item.id})" title="Удалить">✕</button>
+  </div>`;
 }
 
-// ACTIONS
 async function toggleActive(id, active) {
   const { error } = await sb.from('menu_items').update({ is_active: active }).eq('id', id);
   if (error) { toast('Ошибка: ' + error.message); return; }
@@ -366,62 +470,54 @@ async function toggleActive(id, active) {
   if (item) item.is_active = active;
   document.getElementById('row-' + id)?.classList.toggle('inactive', !active);
   renderStats();
-  toast(active ? '✓ Блюдо включено' : '✗ Блюдо скрыто');
+  toast(active ? '✓ Показано в меню' : '— Скрыто из меню');
 }
 
 async function savePrice(id) {
-  const newPrice = document.getElementById('price-' + id)?.value.trim();
-  if (!newPrice) return;
-  const numMatch = newPrice.match(/[\d.]+/);
-  const priceValue = numMatch ? parseFloat(numMatch[0]) : 0;
-  const { error } = await sb.from('menu_items').update({ price_display: newPrice, price_value: priceValue }).eq('id', id);
+  const val = document.getElementById('price-' + id)?.value.trim();
+  if (!val) return;
+  const num = parseFloat((val.match(/[\d.]+/) || [0])[0]);
+  const { error } = await sb.from('menu_items').update({ price_display: val, price_value: num }).eq('id', id);
   if (error) { toast('Ошибка: ' + error.message); return; }
   const item = allItems.find(i => i.id === id);
-  if (item) { item.price_display = newPrice; item.price_value = priceValue; }
-  toast('✓ Цена обновлена');
+  if (item) { item.price_display = val; item.price_value = num; }
+  toast('✓ Цена сохранена');
 }
 
 async function deleteItem(id) {
   const item = allItems.find(i => i.id === id);
-  if (!confirm(`Удалить "${item?.name_ru}"?`)) return;
+  if (!confirm(`Удалить «${item?.name_ru}»?`)) return;
   const { error } = await sb.from('menu_items').delete().eq('id', id);
   if (error) { toast('Ошибка: ' + error.message); return; }
   allItems = allItems.filter(i => i.id !== id);
-  renderStats();
-  renderList();
-  toast('🗑 Блюдо удалено');
+  renderStats(); renderList();
+  toast('Блюдо удалено');
 }
 
 async function addItem() {
   const name = document.getElementById('newName').value.trim();
   const price = document.getElementById('newPrice').value.trim();
   if (!name || !price) { toast('Заполни название и цену'); return; }
-  const priceVal = parseFloat(document.getElementById('newPriceVal').value) || 0;
   const badge = document.getElementById('newBadge').value;
-  const badgeLabels = { hit:'Хит', sig:'Авторское', veg:'Вег', fish:'Рыба' };
-  const newItem = {
+  const labels = { hit:'Хит', sig:'Авторское', veg:'Вег', fish:'Рыба' };
+  const { data, error } = await sb.from('menu_items').insert([{
     category_slug: document.getElementById('newCat').value,
     name_ru: name,
     name_az: document.getElementById('newNameAz').value.trim(),
     name_en: document.getElementById('newNameEn').value.trim(),
     description_ru: document.getElementById('newDesc').value.trim(),
     price_display: price,
-    price_value: priceVal,
+    price_value: parseFloat(document.getElementById('newPriceVal').value) || 0,
     photo_url: document.getElementById('newPhoto').value.trim(),
-    badge: badge,
-    badge_label: badgeLabels[badge] || '',
+    badge, badge_label: labels[badge] || '',
     is_active: true
-  };
-  const { data, error } = await sb.from('menu_items').insert([newItem]).select();
+  }]).select();
   if (error) { toast('Ошибка: ' + error.message); return; }
   allItems.push(data[0]);
-  // Clear form
-  ['newName','newNameAz','newNameEn','newPrice','newPriceVal','newPhoto','newDesc'].forEach(id => {
-    document.getElementById(id).value = '';
-  });
+  ['newName','newNameAz','newNameEn','newPrice','newPriceVal','newPhoto','newDesc'].forEach(id =>
+    document.getElementById(id).value = '');
   document.getElementById('newBadge').value = '';
-  renderStats();
-  renderList();
+  renderStats(); renderList();
   toast('✓ Блюдо добавлено!');
 }
 
