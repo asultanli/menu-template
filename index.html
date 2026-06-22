@@ -1,0 +1,747 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Barin — Меню</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:#F2EBD9; --surface:#E8DEC8; --card:#EDE3CE; --card-alt:#E5D9C0;
+      --border:rgba(60,90,40,0.14); --border2:rgba(60,90,40,0.28);
+      --green:#2A5420; --green-lt:#3A7228; --gold:#7A5C10; --gold-lt:#9A7418;
+      --gold-dim:#C0A055; --cream:#18180A; --text:#262616; --muted:#5E6E48; --faint:#8A9878;
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; font-weight: 300; }
+
+    /* HERO */
+    .hero { min-height:100svh; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; overflow:hidden; }
+    .hero::before { content:''; position:absolute; width:700px; height:700px; border-radius:50%; background:radial-gradient(circle,rgba(46,94,46,.08) 0%,transparent 65%); top:50%; left:50%; transform:translate(-50%,-50%); pointer-events:none; }
+    .hero-inner { position:relative; text-align:center; padding:0 32px; animation:fadeUp .9s ease both; }
+    .hero-eyebrow { font-size:9px; letter-spacing:5px; text-transform:uppercase; color:var(--green-lt); margin-bottom:28px; }
+    .hero-ornament { display:flex; align-items:center; justify-content:center; gap:20px; margin-bottom:16px; }
+    .orn-line { width:72px; height:1px; background:linear-gradient(to right,transparent,var(--green)); }
+    .orn-line.r { background:linear-gradient(to left,transparent,var(--green)); }
+    .orn-dot { width:6px; height:6px; border:1px solid var(--gold-dim); transform:rotate(45deg); }
+    .hero-logo { font-family:'Cormorant Garamond',serif; font-size:clamp(76px,18vw,136px); font-weight:300; color:var(--cream); letter-spacing:14px; text-transform:uppercase; line-height:1; }
+    .hero-badge { display:inline-block; margin-top:22px; border:1px solid var(--border2); border-radius:100px; padding:6px 22px; font-size:9px; letter-spacing:3px; text-transform:uppercase; color:var(--muted); }
+    .hero-tagline { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:18px; color:var(--gold); margin-top:18px; }
+    .hero-scroll { position:absolute; bottom:36px; left:50%; transform:translateX(-50%); display:flex; flex-direction:column; align-items:center; gap:8px; font-size:9px; letter-spacing:3px; text-transform:uppercase; color:var(--faint); animation:bob 2.6s ease infinite; }
+
+    /* NAV */
+    .nav-wrap { position:sticky; top:0; z-index:100; background:rgba(242,235,217,.97); backdrop-filter:blur(20px); border-bottom:1px solid var(--border); }
+    .nav { max-width:1100px; margin:0 auto; display:flex; overflow-x:auto; scrollbar-width:none; padding:0 20px; }
+    .nav::-webkit-scrollbar { display:none; }
+    .nav-btn { flex-shrink:0; padding:14px 16px; font-size:9px; font-weight:500; letter-spacing:2px; text-transform:uppercase; color:var(--faint); background:none; border:none; border-bottom:1.5px solid transparent; cursor:pointer; white-space:nowrap; transition:color .2s,border-color .2s; }
+    .nav-btn:hover { color:var(--text); }
+    .nav-btn.active { color:var(--gold); border-bottom-color:var(--gold); }
+
+    /* PAGE */
+    .page { max-width:1100px; margin:0 auto; padding:72px 24px 120px; }
+    .sec { margin-bottom:84px; }
+    .sec-head { text-align:center; margin-bottom:44px; }
+    .sec-label { font-size:9px; letter-spacing:4px; text-transform:uppercase; color:var(--green-lt); margin-bottom:10px; }
+    .sec-title { font-family:'Cormorant Garamond',serif; font-size:clamp(36px,7vw,52px); font-weight:300; color:var(--cream); line-height:1; }
+    .sec-title em { font-style:italic; color:var(--gold-lt); }
+    .sec-orn { display:flex; align-items:center; justify-content:center; gap:12px; margin-top:16px; }
+    .sec-orn span { width:48px; height:1px; background:linear-gradient(to right,transparent,var(--green)); }
+    .sec-orn span:last-child { background:linear-gradient(to left,transparent,var(--green)); }
+    .sec-orn i { width:5px; height:5px; border:1px solid var(--gold-dim); transform:rotate(45deg); display:block; }
+
+    /* PHOTO GRID */
+    .photo-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:20px; }
+
+    /* CARD */
+    .card { background:var(--card); border-radius:16px; border:1px solid var(--border); overflow:hidden; transition:transform .2s,box-shadow .2s,border-color .2s; position:relative; display:flex; flex-direction:column; }
+    .card:hover { transform:translateY(-3px); box-shadow:0 12px 40px rgba(42,84,32,.12); border-color:var(--border2); }
+
+    .card-photo { width:100%; aspect-ratio:4/3; background:var(--surface); position:relative; overflow:hidden; flex-shrink:0; }
+    .card-photo img { width:100%; height:100%; object-fit:cover; display:block; transition:transform .4s ease; }
+    .card:hover .card-photo img { transform:scale(1.04); }
+
+    .card-badge { position:absolute; top:12px; left:12px; font-size:8px; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; padding:3px 10px; border-radius:20px; backdrop-filter:blur(8px); z-index:1; }
+    .card-badge.hit  { background:rgba(122,92,16,.85); color:#F2EBD9; }
+    .card-badge.sig  { background:rgba(42,84,32,.85);  color:#F2EBD9; }
+    .card-badge.veg  { background:rgba(90,144,64,.85); color:#F2EBD9; }
+    .card-badge.fish { background:rgba(50,100,180,.8); color:#F2EBD9; }
+
+    .card-body { padding:18px 18px 16px; display:flex; flex-direction:column; flex:1; }
+    .card-name { font-family:'Cormorant Garamond',serif; font-size:22px; font-weight:400; color:var(--cream); line-height:1.15; margin-bottom:6px; }
+    .card-sub { font-size:10px; color:var(--muted); font-style:italic; margin-bottom:8px; }
+    .card-desc { font-size:12px; color:var(--faint); line-height:1.6; flex:1; margin-bottom:14px; }
+    .card-footer { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:auto; }
+    .card-price { font-family:'Cormorant Garamond',serif; font-size:24px; font-weight:400; color:var(--gold); }
+    .card-tags { display:flex; flex-wrap:wrap; gap:4px; flex:1; }
+    .tag { font-size:8px; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; padding:2px 9px; border-radius:20px; border:1px solid var(--border); color:var(--faint); }
+    .tag.hot { border-color:rgba(122,92,16,.4); color:var(--gold); }
+    .tag.sig { border-color:rgba(58,114,40,.4); color:var(--green-lt); }
+    .tag.veg { border-color:rgba(58,114,40,.35); color:#5A9040; }
+    .tag.fish { border-color:rgba(50,100,180,.3); color:#5A80C0; }
+
+    .card-add { width:36px; height:36px; border-radius:50%; border:1.5px solid var(--border2); background:transparent; color:var(--green); font-size:20px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background .2s,border-color .2s,color .2s,transform .15s; flex-shrink:0; }
+    .card-add:hover { background:var(--green); border-color:var(--green); color:var(--bg); transform:scale(1.1); }
+    .card-add.added { background:var(--green); border-color:var(--green); color:var(--bg); }
+
+    /* CART */
+    .cart-overlay { position:fixed; inset:0; background:rgba(0,0,0,.35); z-index:400; opacity:0; pointer-events:none; transition:opacity .3s; }
+    .cart-overlay.open { opacity:1; pointer-events:all; }
+    .cart-drawer { position:fixed; top:0; right:0; bottom:0; width:min(400px,100vw); background:var(--bg); border-left:1px solid var(--border2); z-index:401; display:flex; flex-direction:column; transform:translateX(100%); transition:transform .35s cubic-bezier(.4,0,.2,1); box-shadow:-8px 0 40px rgba(0,0,0,.12); }
+    .cart-drawer.open { transform:translateX(0); }
+    .cart-header { padding:24px 24px 20px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+    .cart-header h2 { font-family:'Cormorant Garamond',serif; font-size:26px; font-weight:300; color:var(--cream); letter-spacing:3px; text-transform:uppercase; }
+    .cart-close { width:36px; height:36px; border-radius:50%; border:1px solid var(--border2); background:none; cursor:pointer; color:var(--muted); display:flex; align-items:center; justify-content:center; font-size:18px; transition:all .2s; }
+    .cart-close:hover { border-color:var(--green); color:var(--green); }
+    .cart-body { flex:1; overflow-y:auto; padding:16px 24px; }
+    .cart-empty { text-align:center; padding:60px 0; font-family:'Cormorant Garamond',serif; font-style:italic; font-size:18px; color:var(--faint); }
+    .cart-item { display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid var(--border); }
+    .cart-item:last-child { border-bottom:none; }
+    .cart-item-name { flex:1; font-size:14px; color:var(--text); line-height:1.3; }
+    .cart-item-price { font-size:14px; color:var(--gold); white-space:nowrap; }
+    .cart-qty { display:flex; align-items:center; gap:8px; }
+    .qty-btn { width:26px; height:26px; border-radius:50%; border:1px solid var(--border2); background:none; color:var(--green); font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background .2s,color .2s; }
+    .qty-btn:hover { background:var(--green); color:var(--bg); }
+    .qty-num { font-size:14px; color:var(--text); min-width:16px; text-align:center; }
+    .cart-footer { padding:20px 24px 28px; border-top:1px solid var(--border); }
+    .cart-total-row { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:16px; }
+    .cart-total-label { font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--muted); }
+    .cart-total-price { font-family:'Cormorant Garamond',serif; font-size:28px; font-weight:300; color:var(--cream); }
+    .cart-clear { width:100%; padding:13px; background:var(--green); color:var(--bg); border:none; border-radius:10px; font-size:11px; font-weight:600; letter-spacing:2px; text-transform:uppercase; cursor:pointer; transition:opacity .2s; }
+    .cart-clear:hover { opacity:.85; }
+    .cart-fab { position:fixed; bottom:24px; left:24px; z-index:200; background:var(--green); width:52px; height:52px; border-radius:50%; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 20px rgba(42,84,32,.35); transition:transform .2s,box-shadow .2s; }
+    .cart-fab:hover { transform:scale(1.08); }
+    .cart-fab svg { color:#fff; }
+    .cart-fab-badge { position:absolute; top:-4px; right:-4px; width:20px; height:20px; border-radius:50%; background:var(--gold-dim); color:var(--bg); font-size:10px; font-weight:700; display:none; align-items:center; justify-content:center; }
+
+    /* FOOTER */
+    footer { background:var(--green); text-align:center; padding:64px 24px 40px; }
+    .f-logo { font-family:'Cormorant Garamond',serif; font-size:56px; font-weight:300; letter-spacing:16px; text-transform:uppercase; color:#F2EBD9; }
+    .f-tag { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:15px; color:rgba(242,235,217,.55); margin-top:6px; margin-bottom:32px; }
+    .f-rule { width:44px; height:1px; background:rgba(242,235,217,.3); margin:0 auto 32px; }
+    .f-copy { font-size:11px; color:rgba(242,235,217,.3); padding-top:28px; border-top:1px solid rgba(242,235,217,.12); }
+
+    @keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:none} }
+    @keyframes bob { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(7px)} }
+    .reveal { opacity:0; transform:translateY(14px); transition:opacity .7s ease,transform .7s ease; }
+    .reveal.visible { opacity:1; transform:none; }
+
+    @media(max-width:640px) { .photo-grid{grid-template-columns:1fr 1fr;gap:12px} .card-name{font-size:17px} .card-body{padding:12px 12px 10px} }
+    @media(max-width:400px) { .photo-grid{grid-template-columns:1fr} }
+  </style>
+</head>
+<body>
+
+<section class="hero" id="top">
+  <div class="hero-inner">
+    <p class="hero-eyebrow">Samad Vurgun str., 23 · Baku</p>
+    <div class="hero-ornament"><span class="orn-line"></span><span class="orn-dot"></span><span class="orn-line r"></span></div>
+    <h1 class="hero-logo">Barin</h1>
+    <p class="hero-tagline">Rus Mətbəxi · Русская Кухня</p>
+    <span class="hero-badge">Меню · Menü · Menu</span>
+  </div>
+  <div class="hero-scroll">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+    прокрутите
+  </div>
+</section>
+
+<div class="nav-wrap">
+  <nav class="nav">
+    <button class="nav-btn active" data-target="cold">Холодные закуски</button>
+    <button class="nav-btn" data-target="salads">Салаты</button>
+    <button class="nav-btn" data-target="hot-apps">Горячие закуски</button>
+    <button class="nav-btn" data-target="soups">Супы</button>
+    <button class="nav-btn" data-target="mains">Горячие блюда</button>
+    <button class="nav-btn" data-target="sides">Гарниры</button>
+    <button class="nav-btn" data-target="desserts">Десерты</button>
+    <button class="nav-btn" data-target="drinks">Напитки</button>
+  </nav>
+</div>
+
+<main class="page">
+
+  <!-- ХОЛОДНЫЕ ЗАКУСКИ -->
+  <section class="sec reveal" id="cold">
+    <div class="sec-head">
+      <p class="sec-label">Soyuq qəlyənaltilar / Cold Appetizers</p>
+      <h2 class="sec-title">Холодные <em>закуски</em></h2>
+      <div class="sec-orn"><span></span><i></i><span></span></div>
+    </div>
+    <div class="photo-grid">
+
+      <div class="card" data-name="Соленые огурчики" data-price="4">
+        <div class="card-photo"><img src="https://picsum.photos/id/10/600/450" alt=""></div>
+        <div class="card-body">
+          <p class="card-name">Соленые огурчики</p>
+          <p class="card-sub">Duzlu xiyar · Pickled Cucumbers</p>
+          <div class="card-footer"><span class="card-price">4 ₼</span></div>
+        </div>
+      </div>
+
+      <div class="card" data-name="Грибочки маринованные с луком" data-price="7">
+        <div class="card-photo"><img src="https://picsum.photos/id/20/600/450" alt=""></div>
+        <div class="card-body">
+          <p class="card-name">Грибочки маринованные с луком</p>
+          <p class="card-sub">Soğan ilə marinad edilmiş göbələklər · Marinated Mushrooms with Onions</p>
+          <div class="card-footer"><span class="card-price">7 ₼</span></div>
+        </div>
+      </div>
+
+      <div class="card" data-name='"Жирное ассорти"' data-price="14">
+        <div class="card-photo">
+          <span class="card-badge hit">Хит</span>
+          <img src="https://picsum.photos/id/30/600/450" alt="">
+        </div>
+        <div class="card-body">
+          <p class="card-name">"Жирное ассорти"</p>
+          <p class="card-sub">Hisə verilmiş salo · Smoked Bacon, Traditional Bacon</p>
+          <p class="card-desc">Сало копченое, сало традиционное. Подается с хреном и горчицей</p>
+          <div class="card-footer"><span class="card-price">14 ₼</span><div class="card-tags"><span class="tag hot">Хит</span></div></div>
+        </div>
+      </div>
+
+      <div class="card" data-name="Говяжий язык" data-price="12">
+        <div class="card-photo"><img src="https://picsum.photos/id/40/600/450" alt=""></div>
+        <div class="card-body">
+          <p class="card-name">Говяжий язык</p>
+          <p class="card-sub">Mal Dili · Beef Tongue</p>
+          <div class="card-footer"><span class="card-price">12 ₼</span></div>
+        </div>
+      </div>
+
+      <div class="card" data-name="Сырное ассорти" data-price="16">
+        <div class="card-photo"><img src="https://picsum.photos/id/50/600/450" alt=""></div>
+        <div class="card-body">
+          <p class="card-name">Сырное ассорти</p>
+          <p class="card-sub">Yerli pendir çeşidləri · Local Cheese Selection</p>
+          <div class="card-footer"><span class="card-price">16 ₼</span></div>
+        </div>
+      </div>
+
+      <div class="card" data-name="Селедочка по-домашнему" data-price="15">
+        <div class="card-photo">
+          <span class="card-badge hit">Хит</span>
+          <img src="https://picsum.photos/id/60/600/450" alt="">
+        </div>
+        <div class="card-body">
+          <p class="card-name">Селедочка по-домашнему</p>
+          <p class="card-sub">Az duzlu siyənək · Lightly Salted Herring</p>
+          <p class="card-desc">Сельдь малосольная, картофель, лук, масло</p>
+          <div class="card-footer"><span class="card-price">15 ₼</span><div class="card-tags"><span class="tag hot">Хит</span></div></div>
+        </div>
+      </div>
+
+      <div class="card" data-name='"Барский перекус"' data-price="20">
+        <div class="card-photo">
+          <span class="card-badge sig">Фирменное</span>
+          <img src="https://picsum.photos/id/70/600/450" alt="">
+        </div>
+        <div class="card-body">
+          <p class="card-name">"Барский перекус" <span style="font-size:13px;color:var(--muted)">(8 шт)</span></p>
+          <p class="card-sub">Qızardılmış çörək, rostbif · Toasted Bread, Roast Beef, Sprats</p>
+          <p class="card-desc">Хрустящие гренки, ростбиф, шпроты, томаты с вишней, микс-салат, страчателла</p>
+          <div class="card-footer"><span class="card-price">20 ₼</span><div class="card-tags"><span class="tag sig">Фирменное</span></div></div>
+        </div>
+      </div>
+
+      <div class="card" data-name="Тартар из тунца" data-price="12">
+        <div class="card-photo"><img src="https://picsum.photos/id/80/600/450" alt=""></div>
+        <div class="card-body">
+          <p class="card-name">Тартар из тунца</p>
+          <p class="card-sub">Tuna tartarı · Tuna Tartare</p>
+          <div class="card-footer"><span class="card-price">12 ₼</span><div class="card-tags"><span class="tag fish">Рыба</span></div></div>
+        </div>
+      </div>
+
+      <div class="card" data-name="Куриный паштет с ягодным соусом" data-price="14">
+        <div class="card-photo"><img src="https://picsum.photos/id/90/600/450" alt=""></div>
+        <div class="card-body">
+          <p class="card-name">Куриный паштет с ягодным соусом</p>
+          <p class="card-sub">Giləmeyvə sousu ilə toyuq paşteti · Chicken Pâté with Berry Sauce</p>
+          <div class="card-footer"><span class="card-price">14 ₼</span></div>
+        </div>
+      </div>
+
+      <div class="card" data-name="Авторский хумус с дымным баклажаном" data-price="13">
+        <div class="card-photo">
+          <span class="card-badge sig">Авторское</span>
+          <img src="https://picsum.photos/id/100/600/450" alt="">
+        </div>
+        <div class="card-body">
+          <p class="card-name">Авторский хумус с дымным баклажаном</p>
+          <p class="card-sub">Tüstülənmiş badımcanlı hümmus · Chef's Signature Hummus</p>
+          <div class="card-footer"><span class="card-price">13 ₼</span><div class="card-tags"><span class="tag sig">Авторское</span><span class="tag veg">Вег</span></div></div>
+        </div>
+      </div>
+
+      <div class="card" data-name="«Рыбное ассорти»" data-price="50">
+        <div class="card-photo">
+          <span class="card-badge hit">Хит</span>
+          <img src="https://picsum.photos/id/110/600/450" alt="">
+        </div>
+        <div class="card-body">
+          <p class="card-name">«Рыбное ассорти»</p>
+          <p class="card-sub">Qızılbalıq, yağlı balıq, unaqi, krevetlər · Salmon, Butterfish, Unagi, Shrimps</p>
+          <div class="card-footer"><span class="card-price">50 ₼</span><div class="card-tags"><span class="tag fish">Рыба</span><span class="tag hot">Хит</span></div></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- САЛАТЫ -->
+  <section class="sec reveal" id="salads">
+    <div class="sec-head">
+      <p class="sec-label">Salatlar / Salads</p>
+      <h2 class="sec-title">Са<em>латы</em></h2>
+      <div class="sec-orn"><span></span><i></i><span></span></div>
+    </div>
+    <div class="photo-grid">
+
+      <div class="card" data-name='Салат "Оливье"' data-price="10">
+        <div class="card-photo"><span class="card-badge hit">Хит</span><img src="https://picsum.photos/id/120/600/450" alt=""></div>
+        <div class="card-body">
+          <p class="card-name">Салат "Оливье"</p>
+          <p class="card-sub">Olivye salatı · Olivier Salad</p>
+          <div class="card-footer"><span class="card-price">10 ₼</span><div class="card-tags"><span class="tag hot">Хит</span></div></div>
+        </div>
+      </div>
+
+      <div class="card" data-name='Салат "Селедка под шубой"' data-price="11">
+        <div class="card-photo"><img src="https://picsum.photos/id/130/600/450" alt=""></div>
+        <div class="card-body">
+          <p class="card-name">Салат "Селедка под шубой"</p>
+          <p class="card-sub">Siyənək salatı · Herring Under a Fur Coat</p>
+          <div class="card-footer"><span class="card-price">11 ₼</span></div>
+        </div>
+      </div>
+
+      <div class="card" data-name='Салат "Винегрет"' data-price="8">
+        <div class="card-photo"><img src="https://picsum.photos/id/140/600/450" alt=""></div>
+        <div class="card-body">
+          <p class="card-name">Салат "Винегрет"</p>
+          <p class="card-sub">Vineqret salatı · Vinaigrette Salad</p>
+          <div class="card-footer"><span class="card-price">8 ₼</span><div class="card-tags"><span class="tag veg">Вег</span></div></div>
+        </div>
+      </div>
+
+      <div class="card" data-name='"Цезарь" с курицей' data-price="15">
+        <div class="card-photo"><span class="card-badge hit">Хит</span><img src="https://picsum.photos/id/150/600/450" alt=""></div>
+        <div class="card-body">
+          <p class="card-name">"Цезарь" с курицей</p>
+          <p class="card-sub">Toyuq ilə Sezar salatı · Caesar Salad with Chicken</p>
+          <div class="card-footer"><span class="card-price">15 ₼</span><div class="card-tags"><span class="tag hot">Хит</span></div></div>
+        </div>
+      </div>
+
+      <div class="card" data-name='"Цезарь" с креветками' data-price="19">
+        <div class="card-photo"><img src="https://picsum.photos/id/160/600/450" alt=""></div>
+        <div class="card-body">
+          <p class="card-name">"Цезарь" с креветками</p>
+          <p class="card-sub">Krevetlərlə Sezar salatı · Caesar Salad with Shrimps</p>
+          <div class="card-footer"><span class="card-price">19 ₼</span><div class="card-tags"><span class="tag fish">Морепродукты</span></div></div>
+        </div>
+      </div>
+
+      <div class="card" data-name="Салат с авокадо и жареной гречкой" data-price="14">
+        <div class="card-photo"><img src="https://picsum.photos/id/170/600/450" alt=""></div>
+        <div class="card-body">
+          <p class="card-name">Салат с авокадо и жареной гречкой</p>
+          <p class="card-sub">Avokado və qızardılmış qarabaşaq ilə salat · Salad with Avocado and Fried Buckwheat</p>
+          <div class="card-footer"><span class="card-price">14 ₼</span><div class="card-tags"><span class="tag veg">Вег</span></div></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ГОРЯЧИЕ ЗАКУСКИ -->
+  <section class="sec reveal" id="hot-apps">
+    <div class="sec-head">
+      <p class="sec-label">İsti qəlyanaltilar / Hot Appetizers</p>
+      <h2 class="sec-title">Горячие <em>закуски</em></h2>
+      <div class="sec-orn"><span></span><i></i><span></span></div>
+    </div>
+    <div class="photo-grid">
+
+      <div class="card" data-name="Пельмени домашние" data-price="13">
+        <div class="card-photo"><span class="card-badge hit">Хит</span><img src="https://picsum.photos/id/180/600/450" alt=""></div>
+        <div class="card-body">
+          <p class="card-name">Пельмени домашние</p>
+          <p class="card-sub">Ev sayağı pelmeni · Homemade Pelmeni</p>
+          <p class="card-desc">Говядина, баранина</p>
+          <div class="card-footer"><span class="card-price">13 ₼</span><div class="card-tags"><span class="tag hot">Хит</span></div></div>
+        </div>
+      </div>
+
+      <div class="card" data-name="Вареники с вишней" data-price="13">
+        <div class="card-photo"><img src="https://picsum.photos/id/190/600/450" alt=""></div>
+        <div class="card-body">
+          <p class="card-name">Вареники с вишней</p>
+          <p class="card-sub">Albalılı vareniklər · Cherry Dumplings</p>
+          <div class="card-footer"><span class="card-price">13 ₼</span></div>
+        </div>
+      </div>
+
+      <div class="card" data-name="Темпура с креветками" data-price="19">
+        <div class="card-photo"><img src="https://picsum.photos/id/200/600/450" alt=""></div>
+        <div class="card-body">
+          <p class="card-name">Темпура с креветками и овощами</p>
+          <p class="card-sub">Krevet tempurası · Crispy Shrimp and Vegetable Tempura</p>
+          <div class="card-footer"><span class="card-price">19 ₼</span><div class="card-tags"><span class="tag fish">Морепродукты</span></div></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- СУПЫ -->
+  <section class="sec reveal" id="soups">
+    <div class="sec-head">
+      <p class="sec-label">Şorbalar / Soups</p>
+      <h2 class="sec-title">Су<em>пы</em></h2>
+      <div class="sec-orn"><span></span><i></i><span></span></div>
+    </div>
+    <div class="photo-grid">
+
+      <div class="card" data-name='"Борщ Тарас Бульба"' data-price="12">
+        <div class="card-photo"><img src="https://picsum.photos/id/210/600/450" alt=""></div>
+        <div class="card-body">
+          <p class="card-name">"Борщ Тарас Бульба"</p>
+          <p class="card-sub">Borş · Borscht</p>
+          <div class="card-footer"><span class="card-price">12 ₼</span></div>
+        </div>
+      </div>
+
+      <div class="card" data-name="Окрошка" data-price="8">
+        <div class="card-photo"><img src="https://picsum.photos/id/220/600/450" alt=""></div>
+        <div class="card-body">
+          <p class="card-name">Окрошка</p>
+          <p class="card-sub">Okroşka · Okroshka</p>
+          <div class="card-footer"><span class="card-price">8 ₼</span></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ГОРЯЧИЕ БЛЮДА -->
+  <section class="sec reveal" id="mains">
+    <div class="sec-head">
+      <p class="sec-label">İsti yeməklər / Hot Dishes</p>
+      <h2 class="sec-title">Горячие <em>блюда</em></h2>
+      <div class="sec-orn"><span></span><i></i><span></span></div>
+    </div>
+    <div class="photo-grid">
+
+      <div class="card" data-name='"Котлета по-киевски"' data-price="20">
+        <div class="card-photo"><span class="card-badge hit">Хит</span><img src="https://picsum.photos/id/230/600/450" alt=""></div>
+        <div class="card-body">
+          <p class="card-name">"Котлета по-киевски"</p>
+          <p class="card-sub">Kiyev kotleti · Kiev-Style Chicken Cutlet</p>
+          <div class="card-footer"><span class="card-price">20 ₼</span><div class="card-tags"><span class="tag hot">Хит</span></div></div>
+        </div>
+      </div>
+
+      <div class="card" data-name='Хрустящий цыпленок "Табака"' data-price="27">
+        <div class="card-photo"><span class="card-badge hit">Хит</span><img src="https://picsum.photos/id/240/600/450" alt=""></div>
+        <div class="card-body">
+          <p class="card-name">Хрустящий цыпленок "Табака"</p>
+          <p class="card-sub">Xırtıldayan Tabaka cücəsi · Crispy Tabaka Chicken</p>
+          <div class="card-footer"><span class="card-price">27 ₼</span><div class="card-tags"><span class="tag hot">Хит</span></div></div>
+        </div>
+      </div>
+
+      <div class="card" data-name="Говяжья вырезка со шпинатом" data-price="28">
+        <div class="card-photo"><img src="https://picsum.photos/id/250/600/450" alt=""></div>
+        <div class="card-body">
+          <p class="card-name">Говяжья вырезка со шпинатом</p>
+          <p class="card-sub">İspanaq ilə mal əti filesi · Beef Tenderloin with Spinach</p>
+          <div class="card-footer"><span class="card-price">28 ₼</span></div>
+        </div>
+      </div>
+
+      <div class="card" data-name="Томленая голень ягненка в шафрановом соусе" data-price="28">
+        <div class="card-photo"><span class="card-badge hit">Хит</span><img src="https://picsum.photos/id/260/600/450" alt=""></div>
+        <div class="card-body">
+          <p class="card-name">Томленая голень ягненка в шафрановом соусе</p>
+          <p class="card-sub">Zəfəran sousunda quzu budu · Slow-Cooked Lamb Shank in Saffron Sauce</p>
+          <div class="card-footer"><span class="card-price">28 ₼</span><div class="card-tags"><span class="tag hot">Хит</span></div></div>
+        </div>
+      </div>
+
+      <div class="card" data-name="Лопатка ягненка из печи «Филадельфия»" data-price="110">
+        <div class="card-photo"><span class="card-badge sig">Авторское</span><img src="https://picsum.photos/id/270/600/450" alt=""></div>
+        <div class="card-body">
+          <p class="card-name">Лопатка ягненка из печи «Филадельфия»</p>
+          <p class="card-sub">Philadelphia sousunda quzu kürəyi · Oven-Roasted Lamb Shoulder</p>
+          <div class="card-footer"><span class="card-price">110 ₼</span><div class="card-tags"><span class="tag sig">Авторское</span></div></div>
+        </div>
+      </div>
+
+      <div class="card" data-name="Фаршированное филе дорадо" data-price="22">
+        <div class="card-photo"><span class="card-badge sig">Авторское</span><img src="https://picsum.photos/id/280/600/450" alt=""></div>
+        <div class="card-body">
+          <p class="card-name">Фаршированное филе дорадо</p>
+          <p class="card-sub">Doldurulmuş dorado filesi · Stuffed Dorado Fillet, Chef's Special</p>
+          <div class="card-footer"><span class="card-price">22 ₼</span><div class="card-tags"><span class="tag fish">Рыба</span></div></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ГАРНИРЫ -->
+  <section class="sec reveal" id="sides">
+    <div class="sec-head">
+      <p class="sec-label">Qarnir / Garnish</p>
+      <h2 class="sec-title">Гар<em>ниры</em></h2>
+      <div class="sec-orn"><span></span><i></i><span></span></div>
+    </div>
+    <div class="photo-grid">
+
+      <div class="card" data-name="Жареная картошка криспи с приправами" data-price="8">
+        <div class="card-photo"><img src="https://picsum.photos/id/290/600/450" alt=""></div>
+        <div class="card-body">
+          <p class="card-name">Жареная картошка криспи с приправами</p>
+          <p class="card-sub">Ədviyyatlarla xırtıldayan kartof · Crispy Fried Potatoes</p>
+          <div class="card-footer"><span class="card-price">8 ₼</span></div>
+        </div>
+      </div>
+
+      <div class="card" data-name="Рис с кардамоном, гвоздикой и лавровым листом" data-price="6">
+        <div class="card-photo"><img src="https://picsum.photos/id/300/600/450" alt=""></div>
+        <div class="card-body">
+          <p class="card-name">Рис с кардамоном, гвоздикой и лавровым листом</p>
+          <p class="card-sub">Hil, mixək ilə düyü · Rice with Cardamom, Cloves and Bay Leaf</p>
+          <div class="card-footer"><span class="card-price">6 ₼</span></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ДЕСЕРТЫ -->
+  <section class="sec reveal" id="desserts">
+    <div class="sec-head">
+      <p class="sec-label">Desert / Dessert</p>
+      <h2 class="sec-title">Де<em>серты</em></h2>
+      <div class="sec-orn"><span></span><i></i><span></span></div>
+    </div>
+    <div class="photo-grid">
+
+      <div class="card" data-name="Фирменное тирамису от шефа" data-price="15">
+        <div class="card-photo"><span class="card-badge hit">Хит</span><img src="https://picsum.photos/id/310/600/450" alt=""></div>
+        <div class="card-body">
+          <p class="card-name">Фирменное тирамису от шефа</p>
+          <p class="card-sub">Şefin xüsusi tiramisusu · Chef's Signature Tiramisu</p>
+          <div class="card-footer"><span class="card-price">15 ₼</span><div class="card-tags"><span class="tag sig">Авторское</span><span class="tag hot">Хит</span></div></div>
+        </div>
+      </div>
+
+      <div class="card" data-name="Авторская пахлава с фисташковой начинкой" data-price="14">
+        <div class="card-photo"><span class="card-badge sig">Авторское</span><img src="https://picsum.photos/id/320/600/450" alt=""></div>
+        <div class="card-body">
+          <p class="card-name">Авторская пахлава с фисташковой начинкой</p>
+          <p class="card-sub">Püstəli paxlava · Baklava with Pistachio Filling</p>
+          <div class="card-footer"><span class="card-price">14 ₼</span><div class="card-tags"><span class="tag sig">Авторское</span></div></div>
+        </div>
+      </div>
+
+      <div class="card" data-name="«Наполеон»" data-price="10">
+        <div class="card-photo"><span class="card-badge hit">Хит</span><img src="https://picsum.photos/id/330/600/450" alt=""></div>
+        <div class="card-body">
+          <p class="card-name">«Наполеон»</p>
+          <p class="card-sub">«Napoleon» tortu · Napoleon Cake</p>
+          <div class="card-footer"><span class="card-price">10 ₼</span><div class="card-tags"><span class="tag hot">Хит</span></div></div>
+        </div>
+      </div>
+
+      <div class="card" data-name="Воздушный мусс из темного шоколада" data-price="12">
+        <div class="card-photo"><img src="https://picsum.photos/id/340/600/450" alt=""></div>
+        <div class="card-body">
+          <p class="card-name">Воздушный мусс из темного шоколада</p>
+          <p class="card-sub">Havadar tünd şokolad musu · Airy Dark Chocolate Mousse</p>
+          <div class="card-footer"><span class="card-price">12 ₼</span></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- НАПИТКИ -->
+  <section class="sec reveal" id="drinks">
+    <div class="sec-head">
+      <p class="sec-label">İçkilər / Drinks</p>
+      <h2 class="sec-title">На<em>питки</em></h2>
+      <div class="sec-orn"><span></span><i></i><span></span></div>
+    </div>
+    <div class="photo-grid">
+
+      <div class="card" data-name="Домашний лимонад" data-price="7">
+        <div class="card-photo"><img src="https://picsum.photos/id/350/600/450" alt=""></div>
+        <div class="card-body">
+          <p class="card-name">Домашний лимонад</p>
+          <p class="card-sub">Ev limonadı · Homemade Lemonade <span style="color:var(--faint);font-size:11px">300 ml / 1 L</span></p>
+          <div class="card-footer"><span class="card-price">7 / 20 ₼</span></div>
+        </div>
+      </div>
+
+      <div class="card" data-name="Морс клюквенный" data-price="7">
+        <div class="card-photo"><img src="https://picsum.photos/id/360/600/450" alt=""></div>
+        <div class="card-body">
+          <p class="card-name">Морс клюквенный</p>
+          <p class="card-sub">Mərcanı morsu · Cranberry Juice <span style="color:var(--faint);font-size:11px">300 ml / 1 L</span></p>
+          <div class="card-footer"><span class="card-price">7 / 20 ₼</span></div>
+        </div>
+      </div>
+
+      <div class="card" data-name="Милкшейк ванильный / клубничный" data-price="14">
+        <div class="card-photo"><img src="https://picsum.photos/id/370/600/450" alt=""></div>
+        <div class="card-body">
+          <p class="card-name">Милкшейк</p>
+          <p class="card-sub">Vanilli / Çiyələkli milkşeyk · Vanilla / Strawberry Milkshake</p>
+          <div class="card-footer"><span class="card-price">14 ₼</span></div>
+        </div>
+      </div>
+
+      <div class="card" data-name="Aperol Spritz" data-price="18">
+        <div class="card-photo"><img src="https://picsum.photos/id/380/600/450" alt=""></div>
+        <div class="card-body">
+          <p class="card-name">Aperol Spritz</p>
+          <p class="card-sub">Aperol, prosecco, soda, portağal · Aperol, prosecco, soda water, orange</p>
+          <div class="card-footer"><span class="card-price">18 ₼</span></div>
+        </div>
+      </div>
+
+      <div class="card" data-name="Espresso Martini" data-price="18">
+        <div class="card-photo"><img src="https://picsum.photos/id/390/600/450" alt=""></div>
+        <div class="card-body">
+          <p class="card-name">Espresso Martini</p>
+          <p class="card-sub">Espresso, vanil siropu, kofe likörü, vodka · Espresso, vanilla syrup, coffee liqueur, vodka</p>
+          <div class="card-footer"><span class="card-price">18 ₼</span></div>
+        </div>
+      </div>
+
+      <div class="card" data-name="Mojito" data-price="16">
+        <div class="card-photo"><img src="https://picsum.photos/id/400/600/450" alt=""></div>
+        <div class="card-body">
+          <p class="card-name">Mojito</p>
+          <p class="card-sub">Bacardi, nanə, şəkər, laym · Bacardi, mint, sugar, lime juice, soda</p>
+          <div class="card-footer"><span class="card-price">16 ₼</span></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p class="f-logo">Barin</p>
+  <p class="f-tag">Rus Mətbəxi · Русская Кухня</p>
+  <div class="f-rule"></div>
+  <p class="f-copy">© 2025 Barin Restaurant. Baku, Azerbaijan.</p>
+</footer>
+
+<button class="cart-fab" id="cartFab">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+  <span class="cart-fab-badge" id="cartBadge">0</span>
+</button>
+
+<div class="cart-overlay" id="cartOverlay"></div>
+<div class="cart-drawer" id="cartDrawer">
+  <div class="cart-header">
+    <h2>Заказ</h2>
+    <button class="cart-close" id="cartClose">✕</button>
+  </div>
+  <div class="cart-body" id="cartBody"><p class="cart-empty">Корзина пуста</p></div>
+  <div class="cart-footer" id="cartFooter" style="display:none">
+    <div class="cart-total-row">
+      <span class="cart-total-label">Итого</span>
+      <span class="cart-total-price" id="cartTotal">0 ₼</span>
+    </div>
+    <button class="cart-clear" id="cartClear">Очистить заказ</button>
+  </div>
+</div>
+
+<script>
+  /* NAV */
+  const navBtns = document.querySelectorAll('.nav-btn');
+  document.querySelectorAll('.sec[id]').forEach(sec =>
+    new IntersectionObserver(entries => entries.forEach(e => {
+      if (!e.isIntersecting) return;
+      navBtns.forEach(b => b.classList.toggle('active', b.dataset.target === e.target.id));
+      document.querySelector(`.nav-btn[data-target="${e.target.id}"]`)
+        ?.scrollIntoView({behavior:'smooth', block:'nearest', inline:'center'});
+    }), {threshold:.2}).observe(sec)
+  );
+  navBtns.forEach(b => b.addEventListener('click', () =>
+    document.getElementById(b.dataset.target)?.scrollIntoView({behavior:'smooth', block:'start'})));
+
+  /* REVEAL */
+  const ro = new IntersectionObserver(entries =>
+    entries.forEach(e => e.isIntersecting && e.target.classList.add('visible')), {threshold:0});
+  document.querySelectorAll('.reveal').forEach(el => {
+    ro.observe(el);
+    if (el.getBoundingClientRect().top < window.innerHeight) el.classList.add('visible');
+  });
+
+  /* CART */
+  const cart = {};
+
+  document.querySelectorAll('.card[data-name][data-price]').forEach(card => {
+    const name  = card.dataset.name;
+    const price = parseInt(card.dataset.price);
+    const footer = card.querySelector('.card-footer');
+    if (!footer) return;
+    const btn = document.createElement('button');
+    btn.className = 'card-add';
+    btn.innerHTML = '+';
+    btn.addEventListener('click', () => {
+      if (cart[name]) cart[name].qty++;
+      else cart[name] = {name, price, qty:1};
+      btn.classList.add('added'); btn.innerHTML = '✓';
+      setTimeout(() => { btn.classList.remove('added'); btn.innerHTML = '+'; }, 900);
+      renderCart(); openCart();
+    });
+    footer.appendChild(btn);
+  });
+
+  function renderCart() {
+    const body = document.getElementById('cartBody');
+    const footer = document.getElementById('cartFooter');
+    const badge = document.getElementById('cartBadge');
+    const items = Object.values(cart).filter(i => i.qty > 0);
+    const count = items.reduce((s,i) => s+i.qty, 0);
+    badge.textContent = count;
+    badge.style.display = count > 0 ? 'flex' : 'none';
+    if (!items.length) { body.innerHTML = '<p class="cart-empty">Корзина пуста</p>'; footer.style.display='none'; return; }
+    footer.style.display = 'block';
+    let sum = 0;
+    const keys = items.map(i => i.name);
+    body.innerHTML = items.map((item,idx) => {
+      sum += item.price * item.qty;
+      return `<div class="cart-item"><span class="cart-item-name">${item.name}</span><div class="cart-qty"><button class="qty-btn" data-idx="${idx}" data-action="minus">−</button><span class="qty-num">${item.qty}</span><button class="qty-btn" data-idx="${idx}" data-action="plus">+</button></div><span class="cart-item-price">${item.price*item.qty} ₼</span></div>`;
+    }).join('');
+    document.getElementById('cartTotal').textContent = sum + ' ₼';
+    body.querySelectorAll('.qty-btn').forEach(btn => btn.addEventListener('click', () => {
+      const k = keys[parseInt(btn.dataset.idx)];
+      if (!k || !cart[k]) return;
+      if (btn.dataset.action === 'plus') cart[k].qty++;
+      else { cart[k].qty--; if (cart[k].qty <= 0) delete cart[k]; }
+      renderCart();
+    }));
+  }
+
+  function openCart()  { document.getElementById('cartDrawer').classList.add('open'); document.getElementById('cartOverlay').classList.add('open'); }
+  function closeCart() { document.getElementById('cartDrawer').classList.remove('open'); document.getElementById('cartOverlay').classList.remove('open'); }
+  document.getElementById('cartFab').addEventListener('click', openCart);
+  document.getElementById('cartClose').addEventListener('click', closeCart);
+  document.getElementById('cartOverlay').addEventListener('click', closeCart);
+  document.getElementById('cartClear').addEventListener('click', () => { Object.keys(cart).forEach(k=>delete cart[k]); renderCart(); closeCart(); });
+</script>
+</body>
+</html>
