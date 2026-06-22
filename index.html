@@ -373,12 +373,16 @@ function initVideoHover() {
     video.setAttribute('webkit-playsinline', '');
     video.playsInline = true;
 
-    /* desktop hover */
-    card.addEventListener('mouseenter', () => { setOrigin(); video.currentTime = 0; video.play().catch(()=>{}); });
-    card.addEventListener('mouseleave', () => { video.pause(); video.currentTime = 0; });
+    const isTouch = () => window.matchMedia('(pointer: coarse)').matches;
+
+    /* desktop hover — skip on touch devices */
+    card.addEventListener('mouseenter', () => { if (isTouch()) return; setOrigin(); video.currentTime = 0; video.play().catch(()=>{}); });
+    card.addEventListener('mouseleave', () => { if (isTouch()) return; video.pause(); video.currentTime = 0; });
 
     /* mobile tap */
-    card.addEventListener('click', () => {
+    card.addEventListener('click', (e) => {
+      if (!isTouch()) return;
+      e.stopPropagation();
       if (card.classList.contains('touch-active')) {
         card.classList.remove('touch-active');
         video.pause(); video.currentTime = 0;
@@ -390,7 +394,7 @@ function initVideoHover() {
       }
     });
     document.addEventListener('click', (e) => {
-      if (!card.contains(e.target)) {
+      if (isTouch() && !card.contains(e.target)) {
         card.classList.remove('touch-active');
         video.pause(); video.currentTime = 0;
       }
