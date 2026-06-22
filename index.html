@@ -301,7 +301,7 @@ function cardHtml(item) {
   const hasVideo = item.video_url ? ' has-video' : '';
   const videoCardClass = item.video_url ? ' video-card' : '';
   const videoEl = item.video_url
-    ? `<video src="${item.video_url}" muted playsinline preload="none"></video>
+    ? `<video src="${item.video_url}" muted playsinline preload="metadata"></video>
        <div class="card-video-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div>`
     : '';
 
@@ -355,14 +355,19 @@ function initVideoHover() {
     card.addEventListener('mouseenter', () => { setOrigin(); video.currentTime = 0; video.play(); });
     card.addEventListener('mouseleave', () => { video.pause(); video.currentTime = 0; });
 
-    card.addEventListener('touchstart', (e) => {
-      if (card.classList.contains('touch-active')) return;
-      e.preventDefault();
-      card.classList.add('touch-active');
-      video.play();
-    }, { passive: false });
+    card.addEventListener('click', () => {
+      if (card.classList.contains('touch-active')) {
+        card.classList.remove('touch-active');
+        video.pause(); video.currentTime = 0;
+      } else {
+        setOrigin();
+        card.classList.add('touch-active');
+        video.currentTime = 0;
+        video.play().catch(() => {});
+      }
+    });
 
-    document.addEventListener('touchstart', (e) => {
+    document.addEventListener('click', (e) => {
       if (!card.contains(e.target) && card.classList.contains('touch-active')) {
         card.classList.remove('touch-active');
         video.pause(); video.currentTime = 0;
