@@ -34,11 +34,17 @@
 
     /* NAV */
     .nav-wrap { position:sticky; top:0; z-index:100; background:rgba(242,235,217,.97); backdrop-filter:blur(20px); border-bottom:1px solid var(--border); }
-    .nav { max-width:1100px; margin:0 auto; display:flex; overflow-x:auto; scrollbar-width:none; padding:0 20px; }
+    .nav-inner { max-width:1100px; margin:0 auto; display:flex; align-items:stretch; }
+    .nav { flex:1; display:flex; overflow-x:auto; scrollbar-width:none; padding:0 20px; }
     .nav::-webkit-scrollbar { display:none; }
     .nav-btn { flex-shrink:0; padding:14px 16px; font-size:9px; font-weight:500; letter-spacing:2px; text-transform:uppercase; color:var(--faint); background:none; border:none; border-bottom:1.5px solid transparent; cursor:pointer; white-space:nowrap; transition:color .2s,border-color .2s; }
     .nav-btn:hover { color:var(--text); }
     .nav-btn.active { color:var(--gold); border-bottom-color:var(--gold); }
+    /* LANG SWITCHER */
+    .lang-switcher { display:flex; align-items:center; gap:2px; padding:0 14px; border-left:1px solid var(--border); flex-shrink:0; }
+    .lang-btn { padding:5px 9px; font-size:9px; font-weight:600; letter-spacing:1px; background:none; border:1px solid transparent; border-radius:6px; cursor:pointer; color:var(--faint); transition:all .2s; font-family:'Inter',sans-serif; }
+    .lang-btn:hover:not(.active) { color:var(--text); border-color:var(--border2); }
+    .lang-btn.active { background:var(--green); color:var(--bg); border-color:var(--green); }
 
     /* PAGE */
     .page { max-width:1100px; margin:0 auto; padding:72px 24px 120px; }
@@ -196,12 +202,19 @@
   </div>
   <div class="hero-scroll">
     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
-    прокрутите
+    <span id="heroScroll">прокрутите</span>
   </div>
 </section>
 
 <div class="nav-wrap">
-  <nav class="nav" id="mainNav"></nav>
+  <div class="nav-inner">
+    <nav class="nav" id="mainNav"></nav>
+    <div class="lang-switcher">
+      <button class="lang-btn active" data-lang="ru" onclick="setLang('ru')">RU</button>
+      <button class="lang-btn" data-lang="az" onclick="setLang('az')">AZ</button>
+      <button class="lang-btn" data-lang="en" onclick="setLang('en')">EN</button>
+    </div>
+  </div>
 </div>
 
 <main class="page" id="menuPage">
@@ -255,17 +268,82 @@ const SUPABASE_URL = 'https://rbjatapvjubsdaycdbyp.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJiamF0YXB2anVic2RheWNkYnlwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIxMTEyNTUsImV4cCI6MjA5NzY4NzI1NX0.yG3LIOU2poxRMGVVshER20G1XntBIDTbmNh2YDvMYbM';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// Per-slug title splits for the ornamental heading style
+let currentLang = 'ru';
+let allCats = [], allItems = [];
+
+// Ornamental title splits per language
 const titleSplits = {
-  'cold':     ['Холодные ', 'закуски'],
-  'salads':   ['Са',        'латы'],
-  'hot-apps': ['Горячие ',  'закуски'],
-  'soups':    ['Су',        'пы'],
-  'mains':    ['Горячие ',  'блюда'],
-  'sides':    ['Гар',       'ниры'],
-  'desserts': ['Де',        'серты'],
-  'drinks':   ['На',        'питки'],
+  ru: {
+    'cold':     ['Холодные ', 'закуски'],
+    'salads':   ['Са',        'латы'],
+    'hot-apps': ['Горячие ',  'закуски'],
+    'soups':    ['Су',        'пы'],
+    'mains':    ['Горячие ',  'блюда'],
+    'sides':    ['Гар',       'ниры'],
+    'desserts': ['Де',        'серты'],
+    'drinks':   ['На',        'питки'],
+  },
+  az: {
+    'cold':     ['Soyuq ',   'qəlyənaltilar'],
+    'salads':   ['Sala',     'tlar'],
+    'hot-apps': ['İsti ',    'qəlyanaltilar'],
+    'soups':    ['Şor',      'balar'],
+    'mains':    ['İsti ',    'yeməklər'],
+    'sides':    ['Qar',      'nir'],
+    'desserts': ['De',       'sert'],
+    'drinks':   ['İç',       'kilər'],
+  },
+  en: {
+    'cold':     ['Cold ',    'Appetizers'],
+    'salads':   ['Sa',       'lads'],
+    'hot-apps': ['Hot ',     'Appetizers'],
+    'soups':    ['So',       'ups'],
+    'mains':    ['Hot ',     'Dishes'],
+    'sides':    ['Gar',      'nish'],
+    'desserts': ['Des',      'sert'],
+    'drinks':   ['Dri',      'nks'],
+  }
 };
+
+const uiText = {
+  ru: { scroll: 'прокрутите', order: 'Заказ', empty: 'Корзина пуста', total: 'Итого', clear: 'Очистить заказ' },
+  az: { scroll: 'sürüşdürün', order: 'Sifariş',  empty: 'Səbət boşdur', total: 'Cəmi', clear: 'Təmizlə' },
+  en: { scroll: 'scroll',     order: 'Order',     empty: 'Cart is empty', total: 'Total', clear: 'Clear order' },
+};
+
+function t(key) { return uiText[currentLang]?.[key] || uiText.ru[key]; }
+
+function getName(item) {
+  return (currentLang === 'az' ? item.name_az : currentLang === 'en' ? item.name_en : '') || item.name_ru;
+}
+function getCatName(cat) {
+  return (currentLang === 'az' ? cat.name_az : currentLang === 'en' ? cat.name_en : '') || cat.name_ru;
+}
+function getGroupName(str) {
+  const parts = str.split(' / ');
+  return parts[currentLang === 'az' ? 1 : currentLang === 'en' ? 2 : 0] || parts[0] || str;
+}
+
+function setLang(lang) {
+  currentLang = lang;
+  document.querySelectorAll('.lang-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.lang === lang));
+  // update static UI text
+  const ui = uiText[lang];
+  const scrollEl = document.getElementById('heroScroll');
+  if (scrollEl) scrollEl.textContent = ui.scroll;
+  document.querySelector('.cart-header h2').textContent = ui.order;
+  document.querySelector('.cart-empty')?.remove();
+  document.querySelector('#cartFooter .cart-total-label').textContent = ui.total;
+  document.querySelector('#cartClear').textContent = ui.clear;
+  // rebuild dynamic content
+  buildNav(allCats);
+  buildMenu(allCats, allItems);
+  initNav();
+  initReveal();
+  initVideoHover();
+  initCart();
+}
 
 async function loadMenu() {
   const [{ data: cats }, { data: items }] = await Promise.all([
@@ -273,9 +351,11 @@ async function loadMenu() {
     sb.from('menu_items').select('*').eq('is_active', true).order('sort_order')
   ]);
   if (!cats || !cats.length) return;
+  allCats = cats;
+  allItems = items || [];
 
   buildNav(cats);
-  buildMenu(cats, items || []);
+  buildMenu(cats, allItems);
   initNav();
   initReveal();
   initVideoHover();
@@ -284,7 +364,7 @@ async function loadMenu() {
 
 function buildNav(cats) {
   document.getElementById('mainNav').innerHTML = cats.map((c, i) =>
-    `<button class="nav-btn${i===0?' active':''}" data-target="${c.slug}">${c.name_ru}</button>`
+    `<button class="nav-btn${i===0?' active':''}" data-target="${c.slug}">${getCatName(c)}</button>`
   ).join('');
 }
 
@@ -299,8 +379,14 @@ function buildMenu(cats, items) {
     const catItems = bySlug[cat.slug] || [];
     if (!catItems.length) return '';
 
-    const split = titleSplits[cat.slug] || [cat.name_ru, ''];
-    const label = [cat.name_az, cat.name_en].filter(Boolean).join(' / ');
+    const splits = titleSplits[currentLang] || titleSplits.ru;
+    const split  = splits[cat.slug] || [getCatName(cat), ''];
+    const others = {
+      ru: [cat.name_az, cat.name_en],
+      az: [cat.name_ru, cat.name_en],
+      en: [cat.name_ru, cat.name_az],
+    }[currentLang] || [];
+    const label = others.filter(Boolean).join(' · ');
 
     let gridHtml;
     if (cat.slug === 'drinks') {
@@ -311,7 +397,7 @@ function buildMenu(cats, items) {
         groups[g].push(item);
       });
       gridHtml = Object.entries(groups).map(([g, gItems]) =>
-        `<p class="group-label">${g}</p><div class="photo-grid">${gItems.map(cardHtml).join('')}</div>`
+        `<p class="group-label">${getGroupName(g)}</p><div class="photo-grid">${gItems.map(cardHtml).join('')}</div>`
       ).join('');
     } else {
       gridHtml = `<div class="photo-grid">${catItems.map(cardHtml).join('')}</div>`;
@@ -332,15 +418,23 @@ function buildMenu(cats, items) {
 function cardHtml(item) {
   const badgeMap = { hit:'hit', sig:'sig', veg:'veg', fish:'fish' };
   const tagClass = { hit:'hot', sig:'sig', veg:'veg', fish:'fish' };
+  const badgeLabels = {
+    ru: { hit:'Хит', sig:'Авторское', veg:'Вег', fish:'Рыба' },
+    az: { hit:'Hit', sig:'Müəllif',   veg:'Veg', fish:'Balıq' },
+    en: { hit:'Hit', sig:'Signature', veg:'Veg', fish:'Fish' },
+  };
+  const bl = badgeLabels[currentLang] || badgeLabels.ru;
   const badge = item.badge && badgeMap[item.badge]
-    ? `<span class="card-badge ${badgeMap[item.badge]}">${item.badge_label || item.badge}</span>` : '';
-
+    ? `<span class="card-badge ${badgeMap[item.badge]}">${bl[item.badge]}</span>` : '';
   const tag = item.badge && tagClass[item.badge]
-    ? `<div class="card-tags"><span class="tag ${tagClass[item.badge]}">${item.badge_label || item.badge}</span></div>` : '';
+    ? `<div class="card-tags"><span class="tag ${tagClass[item.badge]}">${bl[item.badge]}</span></div>` : '';
 
-  const sub = [item.name_az, item.name_en].filter(Boolean).join(' · ');
+  const name = getName(item);
+  // subtle reference in another language
+  const refName = currentLang !== 'ru' ? item.name_ru : (item.name_az || item.name_en || '');
+
   const photo = item.photo_url || 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600&h=450&fit=crop';
-  const nameEsc = (item.name_ru || '').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  const nameEsc = name.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   const hasVideo = item.video_url ? ' has-video' : '';
   const videoCardClass = item.video_url ? ' video-card' : '';
   const videoEl = item.video_url
@@ -356,8 +450,8 @@ function cardHtml(item) {
         ${videoEl}
       </div>
       <div class="card-body">
-        <p class="card-name">${item.name_ru}</p>
-        ${sub ? `<p class="card-sub">${sub}</p>` : ''}
+        <p class="card-name">${name}</p>
+        ${refName ? `<p class="card-sub">${refName}</p>` : ''}
         ${item.description_ru ? `<p class="card-desc">${item.description_ru}</p>` : ''}
         <div class="card-footer">
           <span class="card-price">${item.price_display}</span>
